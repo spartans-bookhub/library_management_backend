@@ -1,8 +1,4 @@
 package com.spartans.service;
 
-import org.springframework.stereotype.Service;
-
-@Service
-public class AdminService {
-    // TODO: Implement admin service methods
+public interface AdminService {
 }
