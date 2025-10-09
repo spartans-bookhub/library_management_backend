@@ -4,7 +4,7 @@ A Spring Boot–based backend application to automate and streamline core librar
 
 ---
 
-## 🚀 Tech Stack
+## Tech Stack
 
 - **Language:** Java 17+
 - **Framework:** Spring Boot
