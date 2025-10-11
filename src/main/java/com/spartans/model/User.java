@@ -18,7 +18,7 @@ public class User {
     private String phone;
     private String address;
 
-    public User(Long userId, String userName, String userEmail, String userRole, String userPassword, Integer numBorrowed, LocalDateTime createdAt, Boolean active, String phone, String address) {
+    public User(Long userId, String userName, String userEmail, String userRole, String userPassword, LocalDateTime createdAt, String phone, String address) {
         this.userId = userId;
         this.userName = userName;
         this.userEmail = userEmail;
