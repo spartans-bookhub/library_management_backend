@@ -23,7 +23,8 @@ public class Book {
     private Double price;
     private LocalDateTime createdAt;
     private Integer quantity;
-    private String availabilityStatus; // YES/NO
+    private String availabilityStatus; // YES/NO 
+    // TODO: remove status, add totalCopies and availableCopies
 
     public Book(Long bookId, String bookTitle, String bookAuthor, String category, String isbn, String imageUrl, String publisherName, LocalDate publicationDate, Double price, LocalDateTime createdAt, Integer quantity, String availabilityStatus) {
         this.bookId = bookId;
