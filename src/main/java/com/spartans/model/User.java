@@ -10,26 +10,21 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
-
     private String userName;
     private String userEmail;
     private String userRole; // ADMIN or STUDENT
     private String userPassword;
-    private Integer numBorrowed;
     private LocalDateTime createdAt;
-    private Boolean active;
     private String phone;
     private String address;
 
-    public User(Long userId, String userName, String userEmail, String userRole, String userPassword, Integer numBorrowed, LocalDateTime createdAt, Boolean active, String phone, String address) {
+    public User(Long userId, String userName, String userEmail, String userRole, String userPassword, LocalDateTime createdAt, String phone, String address) {
         this.userId = userId;
         this.userName = userName;
         this.userEmail = userEmail;
         this.userRole = userRole;
         this.userPassword = userPassword;
-        this.numBorrowed = numBorrowed;
         this.createdAt = createdAt;
-        this.active = active;
         this.phone = phone;
         this.address = address;
     }
@@ -74,28 +69,12 @@ public class User {
         this.userPassword = userPassword;
     }
 
-    public Integer getNumBorrowed() {
-        return numBorrowed;
-    }
-
-    public void setNumBorrowed(Integer numBorrowed) {
-        this.numBorrowed = numBorrowed;
-    }
-
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
-    }
-
-    public Boolean getActive() {
-        return active;
-    }
-
-    public void setActive(Boolean active) {
-        this.active = active;
     }
 
     public String getPhone() {
