@@ -27,9 +27,8 @@ public class Transaction {
     private Double fineAmount;
     private String transactionStatus; // BORROWED, RETURNED, DUE
     private String penaltyReason;
-    private String notificationStatus;
 
-    public Transaction(Long transactionId, User user, Book book, LocalDate borrowDate, LocalDate returnDate, LocalDate dueDate, Double fineAmount, String transactionStatus, String penaltyReason, String notificationStatus) {
+    public Transaction(Long transactionId, User user, Book book, LocalDate borrowDate, LocalDate returnDate, LocalDate dueDate, Double fineAmount, String transactionStatus, String penaltyReason) {
         this.transactionId = transactionId;
         this.user = user;
         this.book = book;
@@ -39,7 +38,6 @@ public class Transaction {
         this.fineAmount = fineAmount;
         this.transactionStatus = transactionStatus;
         this.penaltyReason = penaltyReason;
-        this.notificationStatus = notificationStatus;
     }
 
     public Long getTransactionId() {
@@ -114,11 +112,4 @@ public class Transaction {
         this.penaltyReason = penaltyReason;
     }
 
-    public String getNotificationStatus() {
-        return notificationStatus;
-    }
-
-    public void setNotificationStatus(String notificationStatus) {
-        this.notificationStatus = notificationStatus;
-    }
 }
