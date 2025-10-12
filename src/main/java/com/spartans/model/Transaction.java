@@ -3,7 +3,6 @@ package com.spartans.model;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "transaction")
@@ -15,7 +14,7 @@ public class Transaction {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private User user;
+    private Student user;
 
     @ManyToOne
     @JoinColumn(name = "book_id")
@@ -28,7 +27,7 @@ public class Transaction {
     private String transactionStatus; // BORROWED, RETURNED, DUE
     private String penaltyReason;
 
-    public Transaction(Long transactionId, User user, Book book, LocalDate borrowDate, LocalDate returnDate, LocalDate dueDate, Double fineAmount, String transactionStatus, String penaltyReason) {
+    public Transaction(Long transactionId, Student user, Book book, LocalDate borrowDate, LocalDate returnDate, LocalDate dueDate, Double fineAmount, String transactionStatus, String penaltyReason) {
         this.transactionId = transactionId;
         this.user = user;
         this.book = book;
@@ -48,11 +47,11 @@ public class Transaction {
         this.transactionId = transactionId;
     }
 
-    public User getUser() {
+    public Student getUser() {
         return user;
     }
 
-    public void setUser(User user) {
+    public void setUser(Student user) {
         this.user = user;
     }
 

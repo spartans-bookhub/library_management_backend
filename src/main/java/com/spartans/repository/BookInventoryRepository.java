@@ -1,10 +1,9 @@
 package com.spartans.repository;
 
-import com.spartans.model.User;
+import com.spartans.model.BookInventory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, Long> {
-    // TODO: Add custom query methods
+public interface BookInventoryRepository extends JpaRepository<BookInventory, Long> {
 }
