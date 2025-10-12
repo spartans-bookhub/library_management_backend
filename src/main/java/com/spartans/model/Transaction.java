@@ -28,6 +28,9 @@ public class Transaction {
     private String transactionStatus; // BORROWED, RETURNED, DUE
     private String penaltyReason;
 
+    // Default constructor for JPA
+    public Transaction() {}
+
     public Transaction(Long transactionId, User user, Book book, LocalDate borrowDate, LocalDate returnDate, LocalDate dueDate, Double fineAmount, String transactionStatus, String penaltyReason) {
         this.transactionId = transactionId;
         this.user = user;

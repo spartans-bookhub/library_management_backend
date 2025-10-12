@@ -26,6 +26,9 @@ public class Book {
     private String availabilityStatus; // YES/NO 
     // TODO: remove status, add totalCopies and availableCopies
 
+    // Default constructor for JPA
+    public Book() {}
+
     public Book(Long bookId, String bookTitle, String bookAuthor, String category, String isbn, String imageUrl, String publisherName, LocalDate publicationDate, Double price, LocalDateTime createdAt, Integer quantity, String availabilityStatus) {
         this.bookId = bookId;
         this.bookTitle = bookTitle;
