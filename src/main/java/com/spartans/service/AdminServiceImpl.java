@@ -2,7 +2,6 @@ package com.spartans.service;
 
 import com.spartans.config.LibraryConfig;
 import com.spartans.config.TransactionStatusConfig;
-import com.spartans.config.BookAvailabilityConfig;
 import com.spartans.exception.ResourceNotFoundException;
 import com.spartans.model.Book;
 import com.spartans.model.Transaction;
@@ -29,22 +28,18 @@ public class AdminServiceImpl implements AdminService {
     @Autowired
     private TransactionStatusConfig transactionStatusConfig;
     
-    @Autowired
-    private BookAvailabilityConfig bookAvailabilityConfig;
-    
     @Override
     public Book updateBookInventory(Long bookId, Integer quantityChange) {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new ResourceNotFoundException("Book not found with id: " + bookId));
         
-        int newQuantity = book.getQuantity() + quantityChange;
-        book.setQuantity(newQuantity);
+        // Update total copies
+        int newTotalCopies = book.getTotalCopies() + quantityChange;
+        book.setTotalCopies(newTotalCopies);
         
-        // Update availability status based on new quantity
-        if (newQuantity <= 0) {
-            book.setAvailabilityStatus(bookAvailabilityConfig.getUnavailable());
-        } else {
-            book.setAvailabilityStatus(bookAvailabilityConfig.getAvailable());
+        // Update available copies (assuming we're adding new copies)
+        if (quantityChange > 0) {
+            book.setAvailableCopies(book.getAvailableCopies() + quantityChange);
         }
         
         return bookRepository.save(book);
@@ -75,15 +70,21 @@ public class AdminServiceImpl implements AdminService {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new ResourceNotFoundException("Book not found with id: " + bookId));
         
-        book.setAvailabilityStatus(availabilityStatus);
+        // Update available copies based on availability status
+        if ("YES".equals(availabilityStatus)) {
+            // Make all copies available
+            book.setAvailableCopies(book.getTotalCopies());
+        } else if ("NO".equals(availabilityStatus)) {
+            // Make no copies available
+            book.setAvailableCopies(0);
+        }
+        
         return bookRepository.save(book);
     }
     
     @Override
     public List<Book> getBooksWithLowStock(Integer threshold) {
         int actualThreshold = threshold != null ? threshold : libraryConfig.getLowStockThreshold();
-        return bookRepository.findAll().stream()
-                .filter(book -> book.getQuantity() <= actualThreshold)
-                .toList();
+        return bookRepository.findByAvailableCopiesLessThanEqual(actualThreshold);
     }
 }

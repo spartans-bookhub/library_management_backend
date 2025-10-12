@@ -22,14 +22,12 @@ public class Book {
     private LocalDate publicationDate;
     private Double price;
     private LocalDateTime createdAt;
-    private Integer quantity;
-    private String availabilityStatus; // YES/NO 
-    // TODO: remove status, add totalCopies and availableCopies
+    private Integer totalCopies;
+    private Integer availableCopies;
 
-    // Default constructor for JPA
     public Book() {}
 
-    public Book(Long bookId, String bookTitle, String bookAuthor, String category, String isbn, String imageUrl, String publisherName, LocalDate publicationDate, Double price, LocalDateTime createdAt, Integer quantity, String availabilityStatus) {
+    public Book(Long bookId, String bookTitle, String bookAuthor, String category, String isbn, String imageUrl, String publisherName, LocalDate publicationDate, Double price, LocalDateTime createdAt, Integer totalCopies, Integer availableCopies) {
         this.bookId = bookId;
         this.bookTitle = bookTitle;
         this.bookAuthor = bookAuthor;
@@ -40,8 +38,8 @@ public class Book {
         this.publicationDate = publicationDate;
         this.price = price;
         this.createdAt = createdAt;
-        this.quantity = quantity;
-        this.availabilityStatus = availabilityStatus;
+        this.totalCopies = totalCopies;
+        this.availableCopies = availableCopies;
     }
 
     public Long getBookId() {
@@ -84,21 +82,22 @@ public class Book {
         this.isbn = isbn;
     }
 
-    public String getAvailabilityStatus() {
-        return availabilityStatus;
+    public Integer getTotalCopies() {
+        return totalCopies;
     }
 
-    public void setAvailabilityStatus(String availabilityStatus) {
-        this.availabilityStatus = availabilityStatus;
+    public void setTotalCopies(Integer totalCopies) {
+        this.totalCopies = totalCopies;
     }
 
-    public Integer getQuantity() {
-        return quantity;
+    public Integer getAvailableCopies() {
+        return availableCopies;
     }
 
-    public void setQuantity(Integer quantity) {
-        this.quantity = quantity;
+    public void setAvailableCopies(Integer availableCopies) {
+        this.availableCopies = availableCopies;
     }
+
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
