@@ -18,6 +18,9 @@ public class User {
     private String phone;
     private String address;
 
+    // Default constructor for JPA
+    public User() {}
+
     public User(Long userId, String userName, String userEmail, String userRole, String userPassword, LocalDateTime createdAt, String phone, String address) {
         this.userId = userId;
         this.userName = userName;
