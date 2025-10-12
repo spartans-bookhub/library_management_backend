@@ -3,7 +3,6 @@ package com.spartans.service;
 import com.spartans.config.LibraryConfig;
 import com.spartans.config.UserRoleConfig;
 import com.spartans.config.TransactionStatusConfig;
-import com.spartans.config.BookAvailabilityConfig;
 import com.spartans.exception.*;
 import com.spartans.model.Book;
 import com.spartans.model.Transaction;
@@ -41,9 +40,6 @@ public class StudentServiceImpl implements StudentService {
     
     @Autowired
     private TransactionStatusConfig transactionStatusConfig;
-    
-    @Autowired
-    private BookAvailabilityConfig bookAvailabilityConfig;
     
     @Override
     public Transaction borrowBook(Long userId, Long bookId) {
@@ -85,11 +81,8 @@ public class StudentServiceImpl implements StudentService {
         transaction.setTransactionStatus(transactionStatusConfig.getBorrowed());
         transaction.setFineAmount(0.0);
         
-        // Update book quantity
-        book.setQuantity(book.getQuantity() - 1);
-        if (book.getQuantity() <= 0) {
-            book.setAvailabilityStatus(bookAvailabilityConfig.getUnavailable());
-        }
+        // Update available copies
+        book.setAvailableCopies(book.getAvailableCopies() - 1);
         bookRepository.save(book);
         
         // Save transaction
@@ -130,11 +123,8 @@ public class StudentServiceImpl implements StudentService {
             notificationService.sendLateReturnNotification(user, book, daysLate, fine);
         }
         
-        // Update book quantity
-        book.setQuantity(book.getQuantity() + 1);
-        if (book.getQuantity() > 0) {
-            book.setAvailabilityStatus(bookAvailabilityConfig.getAvailable());
-        }
+        // Update available copies
+        book.setAvailableCopies(book.getAvailableCopies() + 1);
         bookRepository.save(book);
         
         // Save transaction
@@ -186,14 +176,12 @@ public class StudentServiceImpl implements StudentService {
     
     @Override
     public List<Book> getAvailableBooks() {
-        return bookRepository.findByAvailabilityStatus(bookAvailabilityConfig.getAvailable());
+        return bookRepository.findByAvailableCopiesGreaterThan(0);
     }
     
     @Override
     public boolean isBookAvailable(Long bookId) {
         Optional<Book> book = bookRepository.findById(bookId);
-        return book.isPresent() && 
-               bookAvailabilityConfig.getAvailable().equals(book.get().getAvailabilityStatus()) && 
-               book.get().getQuantity() > 0;
+        return book.isPresent() && book.get().getAvailableCopies() > 0;
     }
 }
