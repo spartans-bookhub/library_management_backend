@@ -10,7 +10,9 @@ public class UserAuth {
     private String loginId;
     private String password;
 
+
     private String role;   //STUDENT or ADMIN
+
 
     // Bidirectional relation with Student
     @OneToOne(mappedBy = "auth", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
@@ -19,9 +21,11 @@ public class UserAuth {
     public UserAuth() {
     }
 
+
     public UserAuth(String loginId, String password) {
         this.loginId = loginId;
         this.password = password;
+
     }
 
     public String getLoginId() {
@@ -39,4 +43,22 @@ public class UserAuth {
     public void setPassword(String password) {
         this.password = password;
     }
+
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public Student getStudent() {
+        return student;
+    }
+
+    public void setStudent(Student student) {
+        this.student = student;
+    }
+
 }

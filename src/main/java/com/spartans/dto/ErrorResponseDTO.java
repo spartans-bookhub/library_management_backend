@@ -10,6 +10,7 @@ public class ErrorResponseDTO {
     }
 
     // Getters and setters
+
     public String getMessage() {
         return message;
     }
@@ -25,4 +26,5 @@ public class ErrorResponseDTO {
     public void setStatus(int status) {
         this.status = status;
     }
+
 }
