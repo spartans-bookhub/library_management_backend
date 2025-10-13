@@ -1,9 +1,6 @@
 package com.spartans.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 
 @Entity
@@ -12,16 +9,18 @@ public class BookInventory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long inventoryId;
-    private int bookId;
     private int totalCopies;
     private int availableCopies;
+
+    @OneToOne
+    @JoinColumn(name = "book_id", referencedColumnName = "bookId")
+    private Book book;
 
     public BookInventory() {
     }
 
-    public BookInventory(Long inventoryId, int bookId, int totalCopies, int availableCopies) {
+    public BookInventory(Long inventoryId, int totalCopies, int availableCopies) {
         this.inventoryId = inventoryId;
-        this.bookId = bookId;
         this.totalCopies = totalCopies;
         this.availableCopies = availableCopies;
     }
@@ -32,14 +31,6 @@ public class BookInventory {
 
     public void setInventoryId(Long inventoryId) {
         this.inventoryId = inventoryId;
-    }
-
-    public int getBookId() {
-        return bookId;
-    }
-
-    public void setBookId(int bookId) {
-        this.bookId = bookId;
     }
 
     public int getTotalCopies() {

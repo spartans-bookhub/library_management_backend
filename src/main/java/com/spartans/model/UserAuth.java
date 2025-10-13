@@ -1,21 +1,25 @@
 package com.spartans.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "Authentication")
-public class AuthCredential {
+public class UserAuth {
 
     @Id
     private String loginId;
     private String password;
 
-    public AuthCredential() {
+    private String role;   //STUDENT or ADMIN
+
+    // Bidirectional relation with Student
+    @OneToOne(mappedBy = "auth", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Student student;
+
+    public UserAuth() {
     }
 
-    public AuthCredential(String loginId, String password) {
+    public UserAuth(String loginId, String password) {
         this.loginId = loginId;
         this.password = password;
     }

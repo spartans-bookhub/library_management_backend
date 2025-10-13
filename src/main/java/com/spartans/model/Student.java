@@ -1,10 +1,13 @@
 package com.spartans.model;
 
 import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@Table(name = "user")
+
 public class Student {
 
     @Id
@@ -15,6 +18,14 @@ public class Student {
     private LocalDateTime createdAt;
     private String phone;
     private String address;
+
+    @OneToOne
+    @JoinColumn(name = "auth_login_id", referencedColumnName = "loginId")
+    private UserAuth auth;
+
+    // One student has many transactions
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Transaction> transactions = new ArrayList<>();
 
     public Long getStudentId() {
         return studentId;
@@ -43,7 +54,7 @@ public class Student {
     public Student() {
     }
 
-    public Student(Long studentId, String studentName, String studentEmail, LocalDateTime createdAt, String phone, String address) {
+    public Student(String studentName, String studentEmail, LocalDateTime createdAt, String phone, String address) {
         this.studentId = studentId;
         this.studentName = studentName;
         this.studentEmail = studentEmail;
