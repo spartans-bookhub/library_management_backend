@@ -7,11 +7,9 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "book")
 public class Book {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long bookId;
-
     private String bookTitle;
     private String bookAuthor;
     private String category;
@@ -21,7 +19,7 @@ public class Book {
     private LocalDate publicationDate;
 
 
-    @OneToOne(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(mappedBy = "book")
     private BookInventory inventory;
 
     public Book() {
