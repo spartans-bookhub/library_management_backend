@@ -1,4 +1,8 @@
 package com.spartans.dto;
 
-public class LoginResponseDTO {
+import com.spartans.model.Student;
+
+public record LoginResponseDTO(String loginId,
+                               String role,
+                               Student student) {
 }
