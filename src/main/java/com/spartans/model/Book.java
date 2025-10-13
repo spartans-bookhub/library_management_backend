@@ -3,7 +3,6 @@ package com.spartans.model;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "book")
@@ -20,14 +19,15 @@ public class Book {
     private String imageUrl;
     private String publisherName;
     private LocalDate publicationDate;
-    private Double price;
-    private LocalDateTime createdAt;
-    private Integer quantity;
-    private String availabilityStatus; // YES/NO 
-    // TODO: remove status, add totalCopies and availableCopies
 
-    public Book(Long bookId, String bookTitle, String bookAuthor, String category, String isbn, String imageUrl, String publisherName, LocalDate publicationDate, Double price, LocalDateTime createdAt, Integer quantity, String availabilityStatus) {
-        this.bookId = bookId;
+
+    @OneToOne(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
+    private BookInventory inventory;
+
+    public Book() {
+    }
+
+    public Book(String bookTitle, String bookAuthor, String category, String isbn, String imageUrl, String publisherName, LocalDate publicationDate, BookInventory inventory) {
         this.bookTitle = bookTitle;
         this.bookAuthor = bookAuthor;
         this.category = category;
@@ -35,10 +35,7 @@ public class Book {
         this.imageUrl = imageUrl;
         this.publisherName = publisherName;
         this.publicationDate = publicationDate;
-        this.price = price;
-        this.createdAt = createdAt;
-        this.quantity = quantity;
-        this.availabilityStatus = availabilityStatus;
+        this.inventory = inventory;
     }
 
     public Long getBookId() {
@@ -81,30 +78,6 @@ public class Book {
         this.isbn = isbn;
     }
 
-    public String getAvailabilityStatus() {
-        return availabilityStatus;
-    }
-
-    public void setAvailabilityStatus(String availabilityStatus) {
-        this.availabilityStatus = availabilityStatus;
-    }
-
-    public Integer getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(Integer quantity) {
-        this.quantity = quantity;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
     public String getImageUrl() {
         return imageUrl;
     }
@@ -129,11 +102,11 @@ public class Book {
         this.publicationDate = publicationDate;
     }
 
-    public Double getPrice() {
-        return price;
+    public BookInventory getInventory() {
+        return inventory;
     }
 
-    public void setPrice(Double price) {
-        this.price = price;
+    public void setInventory(BookInventory inventory) {
+        this.inventory = inventory;
     }
 }
