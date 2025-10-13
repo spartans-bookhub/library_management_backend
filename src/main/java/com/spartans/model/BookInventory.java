@@ -9,7 +9,6 @@ public class BookInventory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long inventoryId;
-
     private int totalCopies;
     private int availableCopies;
 
