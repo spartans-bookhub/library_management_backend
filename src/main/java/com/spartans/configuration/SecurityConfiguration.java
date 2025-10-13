@@ -9,7 +9,17 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class SecurityConfiguration {
 
     @Bean
-    public PasswordEncoder passwordEncoder(){
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
+//    @Bean
+//    public FilterRegistrationBean getFilter() {
+//        FilterRegistrationBean filterbean = new FilterRegistrationBean();
+//        filterbean.setFilter(new JWTFilter());
+////        filterbean.addUrlPatterns("/api/user/*",
+////                "/api/books/*");
+//        return filterbean;
+//
+//    }
 }
