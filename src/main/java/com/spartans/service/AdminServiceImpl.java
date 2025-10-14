@@ -87,4 +87,6 @@ public class AdminServiceImpl implements AdminService {
         int actualThreshold = threshold != null ? threshold : libraryConfig.getLowStockThreshold();
         return bookRepository.findByAvailableCopiesLessThanEqual(actualThreshold);
     }
+
+
 }
