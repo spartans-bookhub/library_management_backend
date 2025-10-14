@@ -67,19 +67,18 @@ public class BookServiceImpl implements BookService {
         bookRepository.deleteById(id);
     }
 
-//    // Get book by ID
+   // Get book by ID
     @Override
+//    public Book getBookId(Long id)
     public Book getBookById(Long id) {
         return bookRepository.findById(id)
                 .orElseThrow(() -> new BookNotFoundException("Book with ID " + id + " not found."));
     }
 
-    /// ////////////////////////////////////
-
     @Override
-    public Book getBookDetails(String title) {
-        return bookRepository.findByBookTitleIgnoreCase(title)
-                .orElseThrow(() -> new BookNotFoundException("Book not found with title: " + title));
+    public Book getBookDetails(String bookTitle) {
+        return bookRepository.findByBookTitleIgnoreCase(bookTitle)
+                .orElseThrow(() -> new BookNotFoundException("Book not found with title: " + bookTitle));
     }
     // Get book from repository
 //        Book book = bookRepository.findByBookTitleIgnoreCase(bookTitle);
