@@ -9,11 +9,16 @@ import java.util.List;
 
 
 @RestController
-@RequestMapping("/students")
+@RequestMapping("/api/students")
 public class StudentController {
 
     @Autowired
     private StudentService studentService;
+  
+    @GetMapping("/{id}")
+    public ResponseEntity<?> viewProfile(@PathVariable Long id) {
+        return ResponseEntity.ok(studentService.getStudent(id));
+    }
 
     @PostMapping("/{studentId}/borrow/{bookId}")
     public Transaction borrowBook(@PathVariable Long studentId, @PathVariable Long bookId) {

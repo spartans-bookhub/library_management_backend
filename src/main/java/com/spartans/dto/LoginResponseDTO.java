@@ -1,4 +1,6 @@
 package com.spartans.dto;
 
-public class LoginResponseDTO {
+public record LoginResponseDTO(String loginId,
+                               String role,
+                               String token) {
 }

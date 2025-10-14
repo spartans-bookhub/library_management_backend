@@ -1,5 +1,4 @@
 package com.spartans.service;
-
 import com.spartans.exception.BorrowLimitExceededException;
 import com.spartans.model.Book;
 import com.spartans.model.Student;
@@ -7,6 +6,9 @@ import com.spartans.model.Transaction;
 import com.spartans.repository.BookRepository;
 import com.spartans.repository.StudentRepository;
 import com.spartans.repository.TransactionRepository;
+import com.spartans.dto.RegisterRequestDTO;
+import com.spartans.exception.UserNotFoundException;
+import com.spartans.mapper.DTOMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -34,6 +36,19 @@ public class StudentServiceImpl implements StudentService {
 
     @Autowired
     private FineService fineService;
+    
+     @Autowired
+    DTOMapper mapper;
+
+    @Override
+    public Student createStudent(RegisterRequestDTO request) {
+        return studentRepository.save(mapper.toStudent(request));
+    }
+
+    @Override
+    public Student getStudent(Long id){
+        return studentRepository.findById(id).orElseThrow(() -> new UserNotFoundException("Student not found"));
+    }
 
     @Override
     public Transaction borrowBook(Long studentId, Long bookId) {
@@ -94,6 +109,6 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public List<Transaction> getBorrowHistory(Long studentId) {
         return transactionRepository.findByStudentIdAndStatusIn(
-                studentId, Arrays.asList("RETURNED", "OVERDUE"));
-    }
+                studentId, Arrays.asList("RETURNED", "OVERDUE", "BORROWED"));
+   
 }
