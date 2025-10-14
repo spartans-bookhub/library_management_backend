@@ -37,4 +37,14 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleGenericException(Exception ex) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred: " + ex.getMessage());
     }
+
+//    @ExceptionHandler(DuplicateBookException.class)
+//    public ResponseEntity<String> handleDuplicateBook(DuplicateBookException ex) {
+//        return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
+//    }
+//
+//    @ExceptionHandler(BookNotFoundException.class)
+//    public ResponseEntity<String> handleBookNotFound(BookNotFoundException ex) {
+//        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+//    }
 }
