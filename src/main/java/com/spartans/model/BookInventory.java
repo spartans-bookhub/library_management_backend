@@ -16,6 +16,14 @@ public class BookInventory {
     @JoinColumn(name = "book_id", referencedColumnName = "bookId")
     private Book book;
 
+    public Book getBook() {
+        return book;
+    }
+
+    public void setBook(Book book) {
+        this.book = book;
+    }
+
     public BookInventory() {
     }
 

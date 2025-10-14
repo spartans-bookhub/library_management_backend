@@ -38,18 +38,10 @@
           <version>5.5.0</version>
           <scope>test</scope>
       </dependency>
-
       <dependency>
-          <groupId>org.springdoc</groupId>
-          <artifactId>springdoc-openapi-ui</artifactId>
-          <version>1.8.0</version> <!-- or latest compatible version -->
-      </dependency>
-
-      <!-- Optional: For Spring WebFlux if needed -->
-      <dependency>
-          <groupId>org.springdoc</groupId>
-          <artifactId>springdoc-openapi-webflux-ui</artifactId>
-          <version>1.8.0</version>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-test</artifactId>
+          <scope>test</scope>
       </dependency>
 
       <!-- Swagger -->
