@@ -7,5 +7,6 @@ import com.spartans.dto.StudentResponseDTO;
 
 public interface AuthService {
     public StudentResponseDTO register(RegisterRequestDTO request);
+
     public LoginResponseDTO login(LoginRequestDTO request);
 }

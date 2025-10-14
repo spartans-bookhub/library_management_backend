@@ -6,4 +6,6 @@ import com.spartans.model.Student;
 public interface StudentService {
 
     public Student createStudent(RegisterRequestDTO request);
+
+    public Student getStudent(Long id);
 }
