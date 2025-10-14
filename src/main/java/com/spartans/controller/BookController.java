@@ -1,48 +1,65 @@
-package com.thoughtworks.Book.Controller;
+package com.spartans.controller;
 
-import com.thoughtworks.Book.Model.Book;
-import com.thoughtworks.Book.Service.BookService;
+import com.spartans.model.Book;
+import com.spartans.service.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.*;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
-@RequestMapping("/api/book")
+@RequestMapping("/api/admin/books")
 public class BookController {
 
     @Autowired
-    BookService bookService;
+    private BookService bookService;
 
+    // Add new book
+    @PostMapping("/add")
+    public ResponseEntity<Book> addBook(@RequestBody Book book) {
+        Book savedBook = bookService.addBook(book);
+        return new ResponseEntity<>(savedBook, HttpStatus.CREATED);
+    }
 
-    //http://localhost:9007/api/book/list
-    @GetMapping("/list")
-    public  ResponseEntity<?> getAllBooks() {
+    // Get all books
+    @GetMapping
+    public ResponseEntity<List<Book>> getAllBooks() {
         List<Book> books = bookService.getAllBooks();
         return new ResponseEntity<>(books, HttpStatus.OK);
-
-    }
-    //http://localhost:9007/api/book/details?title=Harry%20Potter
-    @GetMapping("/details")
-    public ResponseEntity<?> getBookDetails(@RequestParam String title) {
-        Map<String, Object> bookDetails = bookService.getBookDetails(title);
-
-        // Agar bookDetails me "Message" key hai, matlab book nahi mili
-        if (bookDetails.containsKey("Message")) {
-            return new ResponseEntity<>(bookDetails, HttpStatus.NOT_FOUND);
-        }
-
-        // Book mil gayi, 200 OK return karo
-        return new ResponseEntity<>(bookDetails, HttpStatus.OK);
     }
 
+    // Get book by ID
+    @GetMapping("/{id}")
+    public ResponseEntity<Book> getBookById(@PathVariable Long id) {
+        Book book = bookService.getBookById(id);
+        return new ResponseEntity<>(book, HttpStatus.OK);
+    }
 
+    // Get book by Title
+    @GetMapping("/title/{title}")
+    public ResponseEntity<Book> getBookByTitle(@PathVariable String title) {
+        Book book = bookService.getBookByTitle(title);
+        return new ResponseEntity<>(book, HttpStatus.OK);
+    }
 
+    // Update existing book
+    @PutMapping("/update/{id}")
+    public ResponseEntity<Book> updateBook(@PathVariable Long id, @RequestBody Book updatedBook) {
+        Book updated = bookService.updateBook(id, updatedBook);
+        return new ResponseEntity<>(updated, HttpStatus.OK);
+    }
 
+    // Delete book
+//    @DeleteMapping("/delete/{id}")
+//    public ResponseEntity<?> deleteBook(@PathVariable Long id) {
+//        void message = bookService.deleteBook(id);
+//        return new ResponseEntity<>(message, HttpStatus.OK);
+//    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteBook(@PathVariable Long id) {
+        bookService.deleteBook(id);
+        return ResponseEntity.ok("Book deleted successfully");
+    }
 }
