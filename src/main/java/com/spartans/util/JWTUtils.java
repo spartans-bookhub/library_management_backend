@@ -1,6 +1,7 @@
 package com.spartans.util;
 
 import com.spartans.exception.TokenValidationException;
+import com.spartans.model.Student;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
@@ -20,7 +21,7 @@ public class JWTUtils {
         return Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateToken(String loginId, String role) {
+    public String generateToken(String loginId, String role, Student student) {
         return Jwts.builder()
                 .subject(loginId)
                 .claim("role", role)
