@@ -52,13 +52,7 @@ public class BookServiceImpl implements BookService {
         return bookRepository.save(existingBook);
     }
 
-    // Delete book
-//    @Override
-//    public void deleteBook(Long id) {
-//        Book book = book.getBookId();
-//        bookRepository.delete(book);
-//        return "Book with ID " + id + " deleted successfully.";
-//    }
+
 
     public void deleteBook(Long id) {
         if (!bookRepository.existsById(id)) {
@@ -77,8 +71,15 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Book getBookDetails(String bookTitle) {
-        return bookRepository.findByBookTitleIgnoreCase(bookTitle)
-                .orElseThrow(() -> new BookNotFoundException("Book not found with title: " + bookTitle));
+//        return bookRepository.findByBookTitleIgnoreCase(bookTitle)
+//                .orElseThrow(() -> new BookNotFoundException("Book not found with title: " + bookTitle));
+
+        Optional<Book> optionalBook = bookRepository.findByBookTitleIgnoreCase(bookTitle);
+        if (optionalBook.isPresent()) {
+            return optionalBook.get();
+        } else {
+            throw new BookNotFoundException("Book not found with title: " + bookTitle);
+        }
     }
     // Get book from repository
 //        Book book = bookRepository.findByBookTitleIgnoreCase(bookTitle);
