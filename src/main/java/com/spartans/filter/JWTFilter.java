@@ -41,7 +41,6 @@ public class JWTFilter extends GenericFilter {
 
                 String token = authHeader.substring(7);
                 try {
-                    System.out.println("jwtSecret--"+secretKey);
                     SecretKey key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
                     Jws<Claims> jws = Jwts.parser()
                             .verifyWith(key) // Verifies the signature
