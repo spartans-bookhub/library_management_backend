@@ -1,4 +1,4 @@
-# 📚 Library Management System (Backend)
+# Library Management System (Backend)
 
 A Spring Boot–based backend application to automate and streamline core library operations such as book cataloging, member registration, borrowing and returning of books, fine calculation, and reporting.
 
