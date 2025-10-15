@@ -72,4 +72,9 @@ public class StudentController {
         boolean isAvailable = studentService.isBookAvailable(bookId);
         return new ResponseEntity<>(isAvailable, HttpStatus.OK);
     }
+    //Get student by id
+    @GetMapping("/{id}")
+    public ResponseEntity<?> viewProfile(@PathVariable Long id) {
+        return ResponseEntity.ok(studentService.getStudent(id));
+    }
 }
