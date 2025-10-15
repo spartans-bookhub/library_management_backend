@@ -1,5 +1,7 @@
 package com.spartans.service;
 
+import com.spartans.dto.RegisterRequestDTO;
+import com.spartans.dto.StudentResponseDTO;
 import com.spartans.model.Book;
 import com.spartans.model.Transaction;
 import com.spartans.model.User;
@@ -31,4 +33,7 @@ public interface StudentService {
     
     // Check if book is available
     boolean isBookAvailable(Long bookId);
+
+    //get logged in student
+    StudentResponseDTO getStudent(Long id);
 }

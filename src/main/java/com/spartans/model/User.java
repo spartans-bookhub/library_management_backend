@@ -1,5 +1,6 @@
 package com.spartans.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -18,10 +19,22 @@ public class User {
     private String phone;
     private String address;
 
+    @JsonIgnore
+    @OneToOne
+    @JoinColumn(name = "auth_login_id", referencedColumnName = "loginId")
+    private UserAuth userAuth;
+
+
     // Default constructor for JPA
     public User() {}
 
-    public User(Long userId, String userName, String userEmail, String userRole, String userPassword, LocalDateTime createdAt, String phone, String address) {
+    public User(String userName, String userEmail, LocalDateTime createdAt) {
+        this.userName = userName;
+        this.userEmail = userEmail;
+        this.createdAt = createdAt;
+    }
+
+    public User(Long userId, String userName, String userEmail, String userRole, String userPassword, LocalDateTime createdAt, String phone, String address, UserAuth userAuth) {
         this.userId = userId;
         this.userName = userName;
         this.userEmail = userEmail;
@@ -30,6 +43,15 @@ public class User {
         this.createdAt = createdAt;
         this.phone = phone;
         this.address = address;
+        this.userAuth = userAuth;
+    }
+
+    public UserAuth getUserAuth() {
+        return userAuth;
+    }
+
+    public void setUserAuth(UserAuth userAuth) {
+        this.userAuth = userAuth;
     }
 
     public Long getUserId() {
