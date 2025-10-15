@@ -44,7 +44,7 @@ class BookServiceImplTest {
         book.setPublicationDate(LocalDate.now());
     }
 
-    // ✅ Test addBook success
+    //  Test addBook success
     @Test
     void testAddBook_Success() {
         when(bookRepository.findByIsbnIgnoreCase(anyString())).thenReturn(Optional.empty());
@@ -57,7 +57,7 @@ class BookServiceImplTest {
         verify(bookRepository, times(1)).save(book);
     }
 
-    // 🚫 Test addBook duplicate ISBN
+    //  Test addBook duplicate ISBN
     @Test
     void testAddBook_DuplicateISBN() {
         when(bookRepository.findByIsbnIgnoreCase(book.getIsbn())).thenReturn(Optional.of(book));
