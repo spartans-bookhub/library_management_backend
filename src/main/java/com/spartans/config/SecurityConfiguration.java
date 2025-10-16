@@ -20,13 +20,13 @@ public class SecurityConfiguration {
         return new BCryptPasswordEncoder();
     }
 
-    @Bean
-    public FilterRegistrationBean getFilter() {
-        FilterRegistrationBean filterbean = new FilterRegistrationBean();
-        filterbean.setFilter(new JWTFilter(jwtSecret));
-        filterbean.addUrlPatterns("/api/students/*",
-                "/api/admin/*");
-        return filterbean;
-
-    }
+//    @Bean
+//    public FilterRegistrationBean getFilter() {
+//        FilterRegistrationBean filterbean = new FilterRegistrationBean();
+//        filterbean.setFilter(new JWTFilter(jwtSecret));
+//        filterbean.addUrlPatterns("/api/students/*",
+//                "/api/admin/*");
+//        return filterbean;
+//
+//    }
 }
