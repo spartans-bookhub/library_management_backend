@@ -7,7 +7,7 @@ import com.spartans.dto.StudentResponseDTO;
 import com.spartans.exception.InvalidLoginException;
 import com.spartans.exception.UserAlreadyExistException;
 import com.spartans.exception.UserNotFoundException;
-import com.spartans.mapper.DTOMapper;
+import com.spartans.mapper.UserMapper;
 import com.spartans.model.User;
 import com.spartans.model.UserAuth;
 import com.spartans.repository.AuthRepository;
@@ -23,7 +23,8 @@ public class AuthServiceImpl implements AuthService {
     AuthRepository authRepo;
 
     @Autowired
-    DTOMapper mapper;
+    UserMapper mapper;
+
 
     @Autowired
     PasswordEncoder passwordEncoder;
@@ -38,13 +39,13 @@ public class AuthServiceImpl implements AuthService {
         if (authRepo.existsById(request.loginId())) {
             throw new UserAlreadyExistException("Email is already registered: " + request.loginId());
         }
-        UserAuth userAuth = mapper.toAuth(request);
+        UserAuth userAuth = mapper.toUserAuthEntity(request);
         userAuth.setPassword(passwordEncoder.encode(request.password()));
-        User student = mapper.toStudent(request);
+        User student = mapper.toUserEntity(request);
         student.setUserAuth(userAuth);
         userAuth.setStudent(student);
         userAuth = authRepo.save(userAuth);
-        return mapper.toStudentDto(userAuth.getStudent());
+        return mapper.toUserDto(userAuth.getStudent());
     }
 
     @Override
@@ -68,7 +69,7 @@ public class AuthServiceImpl implements AuthService {
         // Generate JWT
         String token = jwtUtil.generateToken(userAuth.getLoginId(), userAuth.getRole(), userAuth.getStudent());
         System.out.println("login-3-"+userAuth.getLoginId());
-        return mapper.toLoginResponseDto(userAuth, token);
+        return mapper.toLoginDto(userAuth, token);
 
     }
 

@@ -3,10 +3,9 @@ package com.spartans.service;
 import com.spartans.config.LibraryConfig;
 import com.spartans.config.UserRoleConfig;
 import com.spartans.config.TransactionStatusConfig;
-import com.spartans.dto.RegisterRequestDTO;
 import com.spartans.dto.StudentResponseDTO;
 import com.spartans.exception.*;
-import com.spartans.mapper.DTOMapper;
+import com.spartans.mapper.UserMapper;
 import com.spartans.model.Book;
 import com.spartans.model.Transaction;
 import com.spartans.model.User;
@@ -45,7 +44,7 @@ public class StudentServiceImpl implements StudentService {
     private TransactionStatusConfig transactionStatusConfig;
 
     @Autowired
-    DTOMapper mapper;
+    UserMapper mapper;
 
     @Override
     public Transaction borrowBook(Long userId, Long bookId) {
@@ -195,7 +194,7 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public StudentResponseDTO getStudent(Long id) {
         User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("Student not found"));
-        return mapper.toStudentDto(user);
+        return mapper.toUserDto(user);
 
     }
 }
