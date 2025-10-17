@@ -1,4 +1,4 @@
 package com.spartans.service;
 
-public interface AdminService {
+public interface AuthService {
 }

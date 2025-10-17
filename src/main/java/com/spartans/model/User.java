@@ -1,7 +1,11 @@
 package com.spartans.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "user")
@@ -12,13 +16,26 @@ public class User {
     private Long userId;
     private String userName;
     private String userEmail;
-    private String userRole; // ADMIN or STUDENT
+    private String userRole;
     private String userPassword;
     private LocalDateTime createdAt;
     private String phone;
     private String address;
 
-    public User(Long userId, String userName, String userEmail, String userRole, String userPassword, LocalDateTime createdAt, String phone, String address) {
+
+    @JsonIgnore
+    @OneToOne
+    @JoinColumn(name = "login_email", referencedColumnName = "email")
+    private UserAuth auth;
+
+
+    // One student has many transactions
+//    @JsonIgnore
+//    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private List<Transaction> transactions = new ArrayList<>();
+
+
+    public User(Long userId, String userName, String userEmail, String userRole, String userPassword, LocalDateTime createdAt, String phone, String address, UserAuth auth) {
         this.userId = userId;
         this.userName = userName;
         this.userEmail = userEmail;
@@ -27,6 +44,7 @@ public class User {
         this.createdAt = createdAt;
         this.phone = phone;
         this.address = address;
+        this.auth = auth;
     }
 
     public Long getUserId() {
@@ -91,5 +109,13 @@ public class User {
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public UserAuth getAuth() {
+        return auth;
+    }
+
+    public void setAuth(UserAuth auth) {
+        this.auth = auth;
     }
 }
