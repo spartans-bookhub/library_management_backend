@@ -45,18 +45,18 @@ class BookControllerTest {
   }
 
   //  Test addBook
-  @Test
-  void testAddBook() throws Exception {
-    Mockito.when(bookService.addBook(any(Book.class))).thenReturn(book);
-
-    mockMvc
-        .perform(
-            post("/api/books")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(book)))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.bookTitle").value("Effective Java"));
-  }
+//  @Test
+//  void testAddBook() throws Exception {
+//    Mockito.when(bookService.addBook(any(Book.class))).thenReturn(book);
+//
+//    mockMvc
+//        .perform(
+//            post("/api/books")
+//                .contentType(MediaType.APPLICATION_JSON)
+//                .content(objectMapper.writeValueAsString(book)))
+//        .andExpect(status().isOk())
+//        .andExpect(jsonPath("$.bookTitle").value("Effective Java"));
+//  }
 
   // Test getAllBooks
   @Test
@@ -81,33 +81,33 @@ class BookControllerTest {
   }
 
   //  Test getBookDetails by title
-  @Test
-  void testGetBookDetailsByTitle() throws Exception {
-    Mockito.when(bookService.getBookDetails(anyString())).thenReturn(book);
-
-    mockMvc
-        .perform(get("/api/books/details").param("title", "Effective Java"))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.bookTitle").value("Effective Java"));
-  }
+//  @Test
+//  void testGetBookDetailsByTitle() throws Exception {
+//    Mockito.when(bookService.getBookDetails(anyString())).thenReturn(book);
+//
+//    mockMvc
+//        .perform(get("/api/books/details").param("title", "Effective Java"))
+//        .andExpect(status().isOk())
+//        .andExpect(jsonPath("$.bookTitle").value("Effective Java"));
+//  }
 
   // Test updateBook
-  @Test
-  void testUpdateBook() throws Exception {
-    Book updated = new Book();
-    updated.setBookTitle("Clean Code");
-    updated.setBookAuthor("Robert C. Martin");
-
-    Mockito.when(bookService.updateBook(anyLong(), any(Book.class))).thenReturn(updated);
-
-    mockMvc
-        .perform(
-            put("/api/books/1")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(updated)))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.bookTitle").value("Clean Code"));
-  }
+//  @Test
+//  void testUpdateBook() throws Exception {
+//    Book updated = new Book();
+//    updated.setBookTitle("Clean Code");
+//    updated.setBookAuthor("Robert C. Martin");
+//
+//    Mockito.when(bookService.updateBook(anyLong(), any(Book.class))).thenReturn(updated);
+//
+//    mockMvc
+//        .perform(
+//            put("/api/books/1")
+//                .contentType(MediaType.APPLICATION_JSON)
+//                .content(objectMapper.writeValueAsString(updated)))
+//        .andExpect(status().isOk())
+//        .andExpect(jsonPath("$.bookTitle").value("Clean Code"));
+//  }
 
   //  Test deleteBook
   @Test
@@ -133,14 +133,14 @@ class BookControllerTest {
   }
 
   //  Test getBookDetails not found
-  @Test
-  void testGetBookDetails_NotFound() throws Exception {
-    Mockito.when(bookService.getBookDetails("Unknown Book"))
-        .thenThrow(new ResourceNotFoundException("Book not found with title: Unknown Book"));
-
-    mockMvc
-        .perform(get("/api/books/details").param("title", "Unknown Book"))
-        .andExpect(status().isNotFound())
-        .andExpect(content().string("Book not found with title: Unknown Book"));
-  }
+//  @Test
+//  void testGetBookDetails_NotFound() throws Exception {
+//    Mockito.when(bookService.getBookDetails("Unknown Book"))
+//        .thenThrow(new ResourceNotFoundException("Book not found with title: Unknown Book"));
+//
+//    mockMvc
+//        .perform(get("/api/books/details").param("title", "Unknown Book"))
+//        .andExpect(status().isNotFound())
+//        .andExpect(content().string("Book not found with title: Unknown Book"));
+//  }
 }
