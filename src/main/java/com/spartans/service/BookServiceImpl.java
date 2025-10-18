@@ -48,10 +48,8 @@ public class BookServiceImpl implements BookService {
         existingBook.setTotalCopies(updatedBook.getTotalCopies());
         existingBook.setAvailableCopies(updatedBook.getAvailableCopies());
         existingBook.setAvailabilityStatus(updatedBook.getAvailabilityStatus());
-
         return bookRepository.save(existingBook);
     }
-
 
 
     public void deleteBook(Long id) {
@@ -63,7 +61,6 @@ public class BookServiceImpl implements BookService {
 
    // Get book by ID
     @Override
-//    public Book getBookId(Long id)
     public Book getBookById(Long id) {
         return bookRepository.findById(id)
                 .orElseThrow(() -> new BookNotFoundException("Book with ID " + id + " not found."));
@@ -71,9 +68,6 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Book getBookDetails(String bookTitle) {
-//        return bookRepository.findByBookTitleIgnoreCase(bookTitle)
-//                .orElseThrow(() -> new BookNotFoundException("Book not found with title: " + bookTitle));
-
         Optional<Book> optionalBook = bookRepository.findByBookTitleIgnoreCase(bookTitle);
         if (optionalBook.isPresent()) {
             return optionalBook.get();
@@ -81,18 +75,4 @@ public class BookServiceImpl implements BookService {
             throw new BookNotFoundException("Book not found with title: " + bookTitle);
         }
     }
-    // Get book from repository
-//        Book book = bookRepository.findByBookTitleIgnoreCase(bookTitle);
-//
-//        if (book != null) {
-//            response.put("Title", book.getBookTitle());
-//            response.put("Author", book.getBookAuthor());
-//            response.put("Category", book.getCategory());
-
-//            if (book.getAvailabilityStatus().equalsIgnoreCase("YES")) {
-//                response.put("Availability", "Available");
-//            } else {  response.put("Availability", "Not Available");  }
-//        } else { response.put("Message", "No book found with title: " + bookTitle); }
-//        return response;
-//    }
 }
