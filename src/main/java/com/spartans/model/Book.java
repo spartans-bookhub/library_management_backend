@@ -3,6 +3,7 @@ package com.spartans.model;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "book")
@@ -19,15 +20,15 @@ public class Book {
     private String imageUrl;
     private String publisherName;
     private LocalDate publicationDate;
+    private Double price;
+    private LocalDateTime createdAt;
+    private Integer totalCopies;
+    private Integer availableCopies;
 
+    public Book() {}
 
-    @OneToOne(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
-    private BookInventory inventory;
-
-    public Book() {
-    }
-
-    public Book(String bookTitle, String bookAuthor, String category, String isbn, String imageUrl, String publisherName, LocalDate publicationDate, BookInventory inventory) {
+    public Book(Long bookId, String bookTitle, String bookAuthor, String category, String isbn, String imageUrl, String publisherName, LocalDate publicationDate, Double price, LocalDateTime createdAt, Integer totalCopies, Integer availableCopies) {
+        this.bookId = bookId;
         this.bookTitle = bookTitle;
         this.bookAuthor = bookAuthor;
         this.category = category;
@@ -35,7 +36,10 @@ public class Book {
         this.imageUrl = imageUrl;
         this.publisherName = publisherName;
         this.publicationDate = publicationDate;
-        this.inventory = inventory;
+        this.price = price;
+        this.createdAt = createdAt;
+        this.totalCopies = totalCopies;
+        this.availableCopies = availableCopies;
     }
 
     public Long getBookId() {
@@ -78,6 +82,31 @@ public class Book {
         this.isbn = isbn;
     }
 
+    public Integer getTotalCopies() {
+        return totalCopies;
+    }
+
+    public void setTotalCopies(Integer totalCopies) {
+        this.totalCopies = totalCopies;
+    }
+
+    public Integer getAvailableCopies() {
+        return availableCopies;
+    }
+
+    public void setAvailableCopies(Integer availableCopies) {
+        this.availableCopies = availableCopies;
+    }
+
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
     public String getImageUrl() {
         return imageUrl;
     }
@@ -102,11 +131,11 @@ public class Book {
         this.publicationDate = publicationDate;
     }
 
-    public BookInventory getInventory() {
-        return inventory;
+    public Double getPrice() {
+        return price;
     }
 
-    public void setInventory(BookInventory inventory) {
-        this.inventory = inventory;
+    public void setPrice(Double price) {
+        this.price = price;
     }
 }
