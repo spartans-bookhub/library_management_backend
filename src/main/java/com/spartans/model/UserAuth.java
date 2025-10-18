@@ -11,13 +11,13 @@ public class UserAuth {
     private String password;
     private String role;  //STUDENT/ ADMIN
 
-    @OneToOne(mappedBy = "auth", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private Student student;
+    @OneToOne(mappedBy = "userAuth", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private User student;
 
     public UserAuth() {
     }
 
-    public UserAuth(String loginId, String password, String role, Student student) {
+    public UserAuth(String loginId, String password, String role, User student) {
         this.loginId = loginId;
         this.password = password;
         this.role = role;
@@ -55,13 +55,11 @@ public class UserAuth {
         this.role = role;
     }
 
-    public Student getStudent() {
+    public User getStudent() {
         return student;
     }
 
-    public void setStudent(Student student) {
+    public void setStudent(User student) {
         this.student = student;
     }
-
-
 }

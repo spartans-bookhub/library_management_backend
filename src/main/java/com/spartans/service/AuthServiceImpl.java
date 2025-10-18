@@ -4,10 +4,11 @@ import com.spartans.dto.LoginRequestDTO;
 import com.spartans.dto.LoginResponseDTO;
 import com.spartans.dto.RegisterRequestDTO;
 import com.spartans.dto.StudentResponseDTO;
+import com.spartans.exception.InvalidLoginException;
 import com.spartans.exception.UserAlreadyExistException;
 import com.spartans.exception.UserNotFoundException;
-import com.spartans.mapper.DTOMapper;
-import com.spartans.model.Student;
+import com.spartans.mapper.UserMapper;
+import com.spartans.model.User;
 import com.spartans.model.UserAuth;
 import com.spartans.repository.AuthRepository;
 import com.spartans.util.JWTUtils;
@@ -22,7 +23,8 @@ public class AuthServiceImpl implements AuthService {
     AuthRepository authRepo;
 
     @Autowired
-    DTOMapper mapper;
+    UserMapper mapper;
+
 
     @Autowired
     PasswordEncoder passwordEncoder;
@@ -37,13 +39,13 @@ public class AuthServiceImpl implements AuthService {
         if (authRepo.existsById(request.loginId())) {
             throw new UserAlreadyExistException("Email is already registered: " + request.loginId());
         }
-        UserAuth userAuth = mapper.toAuth(request);
+        UserAuth userAuth = mapper.toUserAuthEntity(request);
         userAuth.setPassword(passwordEncoder.encode(request.password()));
-        Student student = mapper.toStudent(request);
-        student.setAuth(userAuth);
+        User student = mapper.toUserEntity(request);
+        student.setUserAuth(userAuth);
         userAuth.setStudent(student);
         userAuth = authRepo.save(userAuth);
-        return mapper.toStudentDto(userAuth.getStudent());
+        return mapper.toUserDto(userAuth.getStudent());
     }
 
     @Override
@@ -57,15 +59,17 @@ public class AuthServiceImpl implements AuthService {
             throw new UserNotFoundException("Student is not found");
         }
 
-        //Validate password
-//        if (!passwordEncoder.matches(request.password(), userAuth.getPassword())) {
-//            throw new InvalidLoginException("Login Id or password is wrong");
-//        }
+       // Validate password
+        if (!passwordEncoder.matches(request.password(), userAuth.getPassword())) {
+            throw new InvalidLoginException("Login Id or password is wrong");
+        }
+
+
         System.out.println("login-2-");
         // Generate JWT
         String token = jwtUtil.generateToken(userAuth.getLoginId(), userAuth.getRole(), userAuth.getStudent());
         System.out.println("login-3-"+userAuth.getLoginId());
-        return mapper.toLoginResponseDto(userAuth, token);
+        return mapper.toLoginDto(userAuth, token);
 
     }
 
