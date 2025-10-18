@@ -8,6 +8,13 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.util.HashMap;
 import java.util.Map;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.SignatureException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -50,4 +57,21 @@ public class GlobalExceptionHandler {
         });
        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
+        @ExceptionHandler(ExpiredJwtException.class)
+        public ResponseEntity<String> handleExpiredJwt(ExpiredJwtException ex) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Token has expired. Please log in again.");
+        }
+
+        @ExceptionHandler({SignatureException.class, MalformedJwtException.class})
+        public ResponseEntity<String> handleInvalidJwt(RuntimeException ex) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Invalid JWT token.");
+        }
+
+        @ExceptionHandler(IllegalArgumentException.class)
+        public ResponseEntity<String> handleIllegalArgument(IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Invalid request: " + ex.getMessage());
+        }
 }
