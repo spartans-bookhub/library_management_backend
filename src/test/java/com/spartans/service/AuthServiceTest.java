@@ -4,9 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import com.spartans.dto.LoginRequestDTO;
-import com.spartans.dto.LoginResponseDTO;
 import com.spartans.dto.RegisterRequestDTO;
-import com.spartans.dto.StudentResponseDTO;
 import com.spartans.exception.InvalidLoginException;
 import com.spartans.exception.UserAlreadyExistException;
 import com.spartans.exception.UserNotFoundException;
@@ -42,27 +40,27 @@ class AuthServiceTest {
     MockitoAnnotations.openMocks(this);
   }
 
-//  @Test
-//  void testLoginSuccess() {
-//    LoginRequestDTO request = new LoginRequestDTO("test@test.com", "pass");
-//    UserAuth userAuth = new UserAuth();
-//    userAuth.setLoginId("test@test.com");
-//    userAuth.setPassword("encodedPass");
-//    userAuth.setRole("STUDENT");
-//    userAuth.setStudent(new User());
-//
-//    when(authRepo.findById("test@test.com")).thenReturn(Optional.of(userAuth));
-//    when(passwordEncoder.matches("pass", "encodedPass")).thenReturn(true);
-//    when(jwtUtil.generateToken("test@test.com", "STUDENT", userAuth.getStudent()))
-//        .thenReturn("token123");
-//    LoginResponseDTO responseDTO = new LoginResponseDTO("test@test.com", "STUDENT", "token123");
-//
-//    LoginResponseDTO result = authService.login(request);
-//    assertNotNull(result);
-//    verify(authRepo).findById("test@test.com");
-//    verify(passwordEncoder).matches("pass", "encodedPass");
-//    verify(jwtUtil).generateToken("test@test.com", "STUDENT", userAuth.getStudent());
-//  }
+  //  @Test
+  //  void testLoginSuccess() {
+  //    LoginRequestDTO request = new LoginRequestDTO("test@test.com", "pass");
+  //    UserAuth userAuth = new UserAuth();
+  //    userAuth.setLoginId("test@test.com");
+  //    userAuth.setPassword("encodedPass");
+  //    userAuth.setRole("STUDENT");
+  //    userAuth.setStudent(new User());
+  //
+  //    when(authRepo.findById("test@test.com")).thenReturn(Optional.of(userAuth));
+  //    when(passwordEncoder.matches("pass", "encodedPass")).thenReturn(true);
+  //    when(jwtUtil.generateToken("test@test.com", "STUDENT", userAuth.getStudent()))
+  //        .thenReturn("token123");
+  //    LoginResponseDTO responseDTO = new LoginResponseDTO("test@test.com", "STUDENT", "token123");
+  //
+  //    LoginResponseDTO result = authService.login(request);
+  //    assertNotNull(result);
+  //    verify(authRepo).findById("test@test.com");
+  //    verify(passwordEncoder).matches("pass", "encodedPass");
+  //    verify(jwtUtil).generateToken("test@test.com", "STUDENT", userAuth.getStudent());
+  //  }
 
   @Test
   void testLoginUserNotFound() {
@@ -121,29 +119,29 @@ class AuthServiceTest {
     assertEquals("Login Id or password is wrong", thrown.getMessage());
   }
 
-//  @Test
-//  void testRegisterSuccess() {
-//
-//    RegisterRequestDTO request = new RegisterRequestDTO("test@test.com", "password", "test");
-//    UserAuth userAuth = new UserAuth();
-//    User student = new User();
-//    userAuth.setStudent(student);
-//    StudentResponseDTO expectedResponse =
-//        new StudentResponseDTO(
-//            Long.valueOf(1000), "test", "test@test.com", "12345", "34street 3445");
-//    when(authRepo.existsById("test@test.com")).thenReturn(false);
-//    when(passwordEncoder.encode("password")).thenReturn("encoded-password");
-//    when(authRepo.save(userAuth)).thenReturn(userAuth);
-//    StudentResponseDTO actualResponse = authService.register(request);
-//    assertNotNull(actualResponse);
-//    assertEquals("test", actualResponse.name());
-//    assertEquals("test@test.com", actualResponse.email());
-//    assertEquals(1000, actualResponse.studentId());
-//
-//    verify(authRepo).existsById("test@test.com");
-//    verify(passwordEncoder).encode("password");
-//    verify(authRepo).save(userAuth);
-//  }
+  //  @Test
+  //  void testRegisterSuccess() {
+  //
+  //    RegisterRequestDTO request = new RegisterRequestDTO("test@test.com", "password", "test");
+  //    UserAuth userAuth = new UserAuth();
+  //    User student = new User();
+  //    userAuth.setStudent(student);
+  //    StudentResponseDTO expectedResponse =
+  //        new StudentResponseDTO(
+  //            Long.valueOf(1000), "test", "test@test.com", "12345", "34street 3445");
+  //    when(authRepo.existsById("test@test.com")).thenReturn(false);
+  //    when(passwordEncoder.encode("password")).thenReturn("encoded-password");
+  //    when(authRepo.save(userAuth)).thenReturn(userAuth);
+  //    StudentResponseDTO actualResponse = authService.register(request);
+  //    assertNotNull(actualResponse);
+  //    assertEquals("test", actualResponse.name());
+  //    assertEquals("test@test.com", actualResponse.email());
+  //    assertEquals(1000, actualResponse.studentId());
+  //
+  //    verify(authRepo).existsById("test@test.com");
+  //    verify(passwordEncoder).encode("password");
+  //    verify(authRepo).save(userAuth);
+  //  }
 
   @Test
   void testRegisterUserAlreadyExistsThrowsException() {
