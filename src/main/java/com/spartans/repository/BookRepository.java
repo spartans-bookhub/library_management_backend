@@ -20,6 +20,6 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     Optional<Book> findByTitleIgnoreCase(String bookTitle);
     Optional<Book> findByIsbnIgnoreCase(String isbn);
     Optional<Book> findByBookTitleIgnoreCase(String bookTitle);
-    boolean getAvailabilityStatus();
+
 }
 

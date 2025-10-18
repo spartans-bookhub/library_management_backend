@@ -23,7 +23,6 @@ public class Book {
     private LocalDateTime createdAt;
     private Integer totalCopies;
     private Integer availableCopies;
-    private String availabilityStatus;
     private  String title;
 
     public Book() {}
@@ -140,14 +139,5 @@ public class Book {
     public void setPrice(Double price) {
         this.price = price;
     }
-
-    public String getAvailabilityStatus() { return availabilityStatus;}
-
-    public void setAvailabilityStatus(String availabilityStatus) { this.availabilityStatus = availabilityStatus;}
-
-    public String getTitle() {  return title;  }
-
-    public void setTitle(String title) {   this.title = title; }
-
 
 }
