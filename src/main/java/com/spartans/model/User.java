@@ -12,7 +12,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
     private String userName;
-    private String userEmail;
+    private String email;
     private String userRole; // ADMIN or STUDENT
     private String userPassword;
     private LocalDateTime createdAt;
@@ -28,16 +28,16 @@ public class User {
     // Default constructor for JPA
     public User() {}
 
-    public User(String userName, String userEmail, LocalDateTime createdAt) {
+    public User(String userName, String email, LocalDateTime createdAt) {
         this.userName = userName;
-        this.userEmail = userEmail;
+        this.email = email;
         this.createdAt = createdAt;
     }
 
-    public User(Long userId, String userName, String userEmail, String userRole, String userPassword, LocalDateTime createdAt, String phone, String address, UserAuth userAuth) {
+    public User(Long userId, String userName, String email, String userRole, String userPassword, LocalDateTime createdAt, String phone, String address, UserAuth userAuth) {
         this.userId = userId;
         this.userName = userName;
-        this.userEmail = userEmail;
+        this.email = email;
         this.userRole = userRole;
         this.userPassword = userPassword;
         this.createdAt = createdAt;
@@ -70,12 +70,12 @@ public class User {
         this.userName = userName;
     }
 
-    public String getUserEmail() {
-        return userEmail;
+    public String getEmail() {
+        return email;
     }
 
-    public void setUserEmail(String userEmail) {
-        this.userEmail = userEmail;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getUserRole() {
