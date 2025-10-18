@@ -19,59 +19,52 @@ import org.springframework.stereotype.Service;
 @Service
 public class AuthServiceImpl implements AuthService {
 
-    @Autowired
-    AuthRepository authRepo;
+  @Autowired AuthRepository authRepo;
 
-    @Autowired
-    UserMapper mapper;
+  @Autowired UserMapper mapper;
 
+  @Autowired PasswordEncoder passwordEncoder;
 
-    @Autowired
-    PasswordEncoder passwordEncoder;
+  @Autowired JWTUtils jwtUtil;
 
-    @Autowired
-    JWTUtils jwtUtil;
+  @Override
+  public StudentResponseDTO register(RegisterRequestDTO request) {
+    // Check if student registration already exists
+    if (authRepo.existsById(request.loginId())) {
+      throw new UserAlreadyExistException("Email is already registered: " + request.loginId());
+    }
+    UserAuth userAuth = mapper.toUserAuthEntity(request);
+    userAuth.setPassword(passwordEncoder.encode(request.password()));
+    User student = mapper.toUserEntity(request);
+    student.setUserAuth(userAuth);
+    userAuth.setStudent(student);
+    userAuth = authRepo.save(userAuth);
+    return mapper.toUserDto(userAuth.getStudent());
+  }
 
-
-    @Override
-    public StudentResponseDTO register(RegisterRequestDTO request) {
-        //Check if student registration already exists
-        if (authRepo.existsById(request.loginId())) {
-            throw new UserAlreadyExistException("Email is already registered: " + request.loginId());
-        }
-        UserAuth userAuth = mapper.toUserAuthEntity(request);
-        userAuth.setPassword(passwordEncoder.encode(request.password()));
-        User student = mapper.toUserEntity(request);
-        student.setUserAuth(userAuth);
-        userAuth.setStudent(student);
-        userAuth = authRepo.save(userAuth);
-        return mapper.toUserDto(userAuth.getStudent());
+  @Override
+  public LoginResponseDTO login(LoginRequestDTO request) {
+    UserAuth userAuth =
+        authRepo
+            .findById(request.loginId())
+            .orElseThrow(() -> new UserNotFoundException("Invalid login"));
+    System.out.println("login--");
+    // Student is not found for this login Id
+    if (userAuth.getRole().equals("STUDENT") && userAuth.getStudent() == null) {
+      System.out.println("login-1-");
+      throw new UserNotFoundException("Student is not found");
     }
 
-    @Override
-    public LoginResponseDTO login(LoginRequestDTO request) {
-        UserAuth userAuth = authRepo.findById(request.loginId())
-                .orElseThrow(() -> new UserNotFoundException("Invalid login"));
-        System.out.println("login--");
-        //Student is not found for this login Id
-        if (userAuth.getRole().equals("STUDENT") && userAuth.getStudent() == null) {
-            System.out.println("login-1-");
-            throw new UserNotFoundException("Student is not found");
-        }
-
-       // Validate password
-        if (!passwordEncoder.matches(request.password(), userAuth.getPassword())) {
-            throw new InvalidLoginException("Login Id or password is wrong");
-        }
-
-
-        System.out.println("login-2-");
-        // Generate JWT
-        String token = jwtUtil.generateToken(userAuth.getLoginId(), userAuth.getRole(), userAuth.getStudent());
-        System.out.println("login-3-"+userAuth.getLoginId());
-        return mapper.toLoginDto(userAuth, token);
-
+    // Validate password
+    if (!passwordEncoder.matches(request.password(), userAuth.getPassword())) {
+      throw new InvalidLoginException("Login Id or password is wrong");
     }
 
-
+    System.out.println("login-2-");
+    // Generate JWT
+    String token =
+        jwtUtil.generateToken(userAuth.getLoginId(), userAuth.getRole(), userAuth.getStudent());
+    System.out.println("login-3-" + userAuth.getLoginId());
+    return mapper.toLoginDto(userAuth, token);
+  }
 }
