@@ -22,7 +22,7 @@ import static org.mockito.Mockito.*;
 public class UserServiceImplTest {
 
     @InjectMocks
-    private UserServiceImpl studentService;
+    private TransactionServiceImpl transactionService;
 
     @Mock
     private BookRepository bookRepository;
@@ -87,7 +87,7 @@ public class UserServiceImplTest {
         when(transactionRepository.countByUserAndTransactionStatus(user, "BORROWED")).thenReturn(2L);
         when(transactionRepository.save(any(Transaction.class))).thenReturn(transaction);
 
-        Transaction result = studentService.borrowBook(1L, 10L);
+        Transaction result = transactionService.borrowBook(1L, 10L);
 
         assertNotNull(result);
         verify(notificationService, times(1)).sendBookBorrowedNotification(user, book);
@@ -97,21 +97,21 @@ public class UserServiceImplTest {
     @Test
     void borrowBook_UserNotFound_ThrowsException() {
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
-        assertThrows(ResourceNotFoundException.class, () -> studentService.borrowBook(1L, 10L));
+        assertThrows(ResourceNotFoundException.class, () -> transactionService.borrowBook(1L, 10L));
     }
 
     @Test
     void borrowBook_BookNotFound_ThrowsException() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(bookRepository.findById(10L)).thenReturn(Optional.empty());
-        assertThrows(ResourceNotFoundException.class, () -> studentService.borrowBook(1L, 10L));
+        assertThrows(ResourceNotFoundException.class, () -> transactionService.borrowBook(1L, 10L));
     }
 
     @Test
     void borrowBook_NotAStudent_ThrowsInvalidOperationException() {
         user.setUserRole("ADMIN");
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        assertThrows(InvalidOperationException.class, () -> studentService.borrowBook(1L, 10L));
+        assertThrows(InvalidOperationException.class, () -> transactionService.borrowBook(1L, 10L));
     }
 
     @Test
@@ -119,7 +119,7 @@ public class UserServiceImplTest {
         book.setAvailableCopies(0);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(bookRepository.findById(10L)).thenReturn(Optional.of(book));
-        assertThrows(BookNotAvailableException.class, () -> studentService.borrowBook(1L, 10L));
+        assertThrows(BookNotAvailableException.class, () -> transactionService.borrowBook(1L, 10L));
     }
 
     @Test
@@ -128,7 +128,7 @@ public class UserServiceImplTest {
         when(bookRepository.findById(10L)).thenReturn(Optional.of(book));
         when(transactionRepository.findByUserAndBookAndTransactionStatus(user, book, "BORROWED"))
                 .thenReturn(Optional.of(transaction));
-        assertThrows(BookAlreadyBorrowedException.class, () -> studentService.borrowBook(1L, 10L));
+        assertThrows(BookAlreadyBorrowedException.class, () -> transactionService.borrowBook(1L, 10L));
     }
 
     @Test
@@ -138,7 +138,7 @@ public class UserServiceImplTest {
         when(transactionRepository.countByUserAndTransactionStatus(user, "BORROWED")).thenReturn(5L);
         when(transactionRepository.findByUserAndBookAndTransactionStatus(user, book, "BORROWED"))
                 .thenReturn(Optional.empty());
-        assertThrows(BorrowLimitExceededException.class, () -> studentService.borrowBook(1L, 10L));
+        assertThrows(BorrowLimitExceededException.class, () -> transactionService.borrowBook(1L, 10L));
     }
 
     // --- returnBook tests ---
@@ -151,7 +151,7 @@ public class UserServiceImplTest {
                 .thenReturn(Optional.of(transaction));
         when(transactionRepository.save(any(Transaction.class))).thenReturn(transaction);
 
-        Transaction result = studentService.returnBook(1L, 10L);
+        Transaction result = transactionService.returnBook(1L, 10L);
 
         assertEquals("RETURNED", result.getTransactionStatus());
         verify(notificationService, times(1)).sendBookReturnedNotification(user, book);
@@ -166,7 +166,7 @@ public class UserServiceImplTest {
                 .thenReturn(Optional.of(transaction));
         when(transactionRepository.save(any(Transaction.class))).thenReturn(transaction);
 
-        Transaction result = studentService.returnBook(1L, 10L);
+        Transaction result = transactionService.returnBook(1L, 10L);
 
         assertTrue(result.getFineAmount() > 0);
         verify(notificationService, times(1))
@@ -179,7 +179,7 @@ public class UserServiceImplTest {
         when(bookRepository.findById(10L)).thenReturn(Optional.of(book));
         when(transactionRepository.findByUserAndBookAndTransactionStatus(user, book, "BORROWED"))
                 .thenReturn(Optional.empty());
-        assertThrows(ResourceNotFoundException.class, () -> studentService.returnBook(1L, 10L));
+        assertThrows(ResourceNotFoundException.class, () -> transactionService.returnBook(1L, 10L));
     }
 
     // --- other methods ---
@@ -190,7 +190,7 @@ public class UserServiceImplTest {
         when(transactionRepository.findByUserAndTransactionStatus(user, "BORROWED"))
                 .thenReturn(List.of(transaction));
 
-        List<Transaction> result = studentService.getBorrowedBooks(1L);
+        List<Transaction> result = transactionService.getBorrowedBooks(1L);
         assertEquals(1, result.size());
     }
 
@@ -206,7 +206,7 @@ public class UserServiceImplTest {
         when(transactionRepository.findByUserAndTransactionStatus(user, "BORROWED"))
                 .thenReturn(List.of(transaction, overdue));
 
-        List<Transaction> result = studentService.getOverdueBooks(1L);
+        List<Transaction> result = transactionService.getOverdueBooks(1L);
         assertEquals(1, result.size());
     }
 
@@ -214,19 +214,19 @@ public class UserServiceImplTest {
     void canBorrowMoreBooks_ReturnsTrueIfBelowLimit() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(transactionRepository.countByUserAndTransactionStatus(user, "BORROWED")).thenReturn(2L);
-        assertTrue(studentService.canBorrowMoreBooks(1L));
+        assertTrue(transactionService.canBorrowMoreBooks(1L));
     }
 
     @Test
     void isBookAvailable_ReturnsTrue() {
         when(bookRepository.findById(10L)).thenReturn(Optional.of(book));
-        assertTrue(studentService.isBookAvailable(10L));
+        assertTrue(transactionService.isBookAvailable(10L));
     }
 
     @Test
     void isBookAvailable_ReturnsFalseWhenOutOfStock() {
         book.setAvailableCopies(0);
         when(bookRepository.findById(10L)).thenReturn(Optional.of(book));
-        assertFalse(studentService.isBookAvailable(10L));
+        assertFalse(transactionService.isBookAvailable(10L));
     }
 }
