@@ -1,13 +1,18 @@
 package com.spartans.util;
 
+import com.spartans.config.JWTConfig;
 import com.spartans.exception.TokenValidationException;
 import com.spartans.model.User;
+import com.spartans.model.UserAuth;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.ServletException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.net.http.HttpRequest;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
@@ -16,52 +21,56 @@ import java.util.Map;
 @Component
 public class JWTUtils {
 
-    @Value("${jwt.secret}")
-    private String SECRET_KEY;
+    @Autowired
+    private JWTConfig jwtConfig;
 
-    private final long EXPIRATION_MS = 24 * 60 * 60 * 1000; // 24 hours
-
-    // Generate the SecretKey
     private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
+        return Keys.hmacShaKeyFor(jwtConfig.getSecret().getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateToken(String loginId, String role, User student) {
-        Map<String, Object> studentData = new HashMap<>();
-        studentData.put("id", student.getUserId());
-        studentData.put("name", student.getUserName());
+    public String generateToken(UserAuth userAuth) {
+        Map<String, Object> userData = new HashMap<>();
+        if(userAuth.getRole().equalsIgnoreCase("STUDENT")){
+            userData.put("id", userAuth.getStudent().getUserId());
+        }
+        System.out.println("generateToken=="+userAuth.getRole());
+        userData.put("email", userAuth.getEmail());
+        userData.put("role", userAuth.getRole());
         return Jwts.builder()
-                .subject(loginId)
-                .claim("role", role)
-                .claim("student", studentData)
+                .subject(userAuth.getEmail())
+                .claim("user", userData)
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + EXPIRATION_MS))
+                .issuer("book-nest")
+                .expiration(new Date(System.currentTimeMillis() + jwtConfig.getExpiration()))
                 .signWith(getSigningKey())
                 .compact();
 
     }
 
-    private Claims extractAllClaims(String token) {
-        return Jwts.parser()
-                .verifyWith(getSigningKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
-    }
-
-    public String getRole(String token) {
-        return extractAllClaims(token).get("role", String.class);
-    }
-
-    public Long getUserId(String token) {
-        Map<String, Object> studentData = extractAllClaims(token).get("student", Map.class);
-        if (studentData != null && studentData.get("id") != null) {
-            return Long.parseLong(studentData.get("id").toString());
+    public void validateToken(String token) {
+        try {
+            Jws<Claims> jws = Jwts.parser()
+                    .verifyWith(getSigningKey())
+                    .requireIssuer("book-nest")
+                    .build()
+                    .parseSignedClaims(token);
+            addClaimsInContext(jws.getPayload());
+        }catch(ExpiredJwtException ex){
+            throw new TokenValidationException("User is logged out. Login Again");
         }
-        return null;
+        catch (SignatureException | UnsupportedJwtException | MalformedJwtException |
+                 IllegalArgumentException e) {
+            throw new TokenValidationException(e.getMessage());
+        }
     }
 
-    public String getLoginId(String token) {
-        return extractAllClaims(token).getSubject();
+    public void addClaimsInContext(Claims claims){
+        Map<String, Object> userClaims = new HashMap<>();
+        Map<String, Object> userMap = (HashMap<String, Object>) claims.get("user");
+        userClaims.put("role", userMap.get("role"));
+        userClaims.put("id", (Long)userMap.get("id"));
+        userClaims.put("email", userMap.get("email"));
+        UserContext.setUser(userClaims);
     }
+
 }

@@ -50,4 +50,19 @@ public class GlobalExceptionHandler {
         });
        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler({UserAlreadyExistException.class})
+    public ResponseEntity<String> handleUserNotFoundException(UserAlreadyExistException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+
+    @ExceptionHandler({UserNotFoundException.class})
+    public ResponseEntity<String> handleUserNotFoundException(UserNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler({InvalidLoginException.class, TokenValidationException.class})
+    public ResponseEntity<String> handleInvalidLoginAndTokenException(RuntimeException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
+    }
 }

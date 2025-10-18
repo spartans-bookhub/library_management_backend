@@ -3,6 +3,7 @@ package com.spartans.controller;
 import com.spartans.model.Transaction;
 import com.spartans.service.TransactionService;
 import com.spartans.util.JWTUtils;
+import com.spartans.util.UserContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
@@ -41,7 +42,7 @@ class TransactionControllerTest {
         mockTransaction.setTransactionId(100L);
 
         when(request.getHeader("Authorization")).thenReturn("Bearer dummyToken");
-        when(jwtUtils.getUserId("dummyToken")).thenReturn(userId);
+        when(UserContext.getUserId()).thenReturn(userId);
         when(transactionService.borrowBook(userId, bookId)).thenReturn(mockTransaction);
 
         ResponseEntity<Transaction> response = controller.borrowBook(bookId, request);
@@ -59,7 +60,7 @@ class TransactionControllerTest {
         mockTransaction.setTransactionId(101L);
 
         when(request.getHeader("Authorization")).thenReturn("Bearer dummyToken");
-        when(jwtUtils.getUserId("dummyToken")).thenReturn(userId);
+        when(UserContext.getUserId()).thenReturn(userId);
         when(transactionService.returnBook(userId, bookId)).thenReturn(mockTransaction);
 
         ResponseEntity<Transaction> response = controller.returnBook(bookId, request);
@@ -78,7 +79,7 @@ class TransactionControllerTest {
         t2.setTransactionId(2L);
 
         when(request.getHeader("Authorization")).thenReturn("Bearer dummyToken");
-        when(jwtUtils.getUserId("dummyToken")).thenReturn(userId);
+        when(UserContext.getUserId()).thenReturn(userId);
         when(transactionService.getBorrowedBooks(userId)).thenReturn(List.of(t1, t2));
 
         ResponseEntity<List<Transaction>> response = controller.getBorrowedBooks(request);
@@ -94,7 +95,7 @@ class TransactionControllerTest {
         t.setTransactionId(200L);
 
         when(request.getHeader("Authorization")).thenReturn("Bearer dummyToken");
-        when(jwtUtils.getUserId("dummyToken")).thenReturn(userId);
+        when(UserContext.getUserId()).thenReturn(userId);
         when(transactionService.getBorrowingHistory(userId)).thenReturn(List.of(t));
 
         ResponseEntity<List<Transaction>> response = controller.getBorrowingHistory(request);
@@ -109,7 +110,7 @@ class TransactionControllerTest {
         Long userId = 1L;
 
         when(request.getHeader("Authorization")).thenReturn("Bearer dummyToken");
-        when(jwtUtils.getUserId("dummyToken")).thenReturn(userId);
+        when(UserContext.getUserId()).thenReturn(userId);
         when(transactionService.canBorrowMoreBooks(userId)).thenReturn(true);
 
         ResponseEntity<Boolean> response = controller.canBorrowMoreBooks(request);

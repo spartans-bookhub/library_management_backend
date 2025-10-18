@@ -51,7 +51,7 @@ public class TransactionServiceImpl implements TransactionService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
-        if (!userRoleConfig.getStudent().equals(user.getUserRole())) {
+        if (!userRoleConfig.getStudent().equals(user.getUserAuth().getRole())) {
             throw new InvalidOperationException("Only students can borrow books");
         }
 
@@ -249,4 +249,6 @@ public class TransactionServiceImpl implements TransactionService {
         int actualThreshold = threshold != null ? threshold : libraryConfig.getLowStockThreshold();
         return bookRepository.findByAvailableCopiesLessThanEqual(actualThreshold);
     }
+
+
 }

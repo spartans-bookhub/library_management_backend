@@ -47,8 +47,8 @@ public class UserControllerTest {
         user = new User();
         user.setUserId(10L);
         user.setUserName("John Doe");
-        user.setUserEmail("john@example.com");
-        user.setUserRole("STUDENT");
+        user.getUserAuth().setEmail("john@example.com");
+        user.getUserAuth().setRole("STUDENT");
 
 
         book = new Book();
