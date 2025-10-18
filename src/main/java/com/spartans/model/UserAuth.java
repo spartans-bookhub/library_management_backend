@@ -6,61 +6,63 @@ import jakarta.persistence.*;
 @Table(name = "Authentication")
 public class UserAuth {
 
-  @Id private String loginId;
-  private String password;
-  private String role; // STUDENT/ ADMIN
+    @Id
+    private String email;
+    private String password;
+    private String role;  //STUDENT/ ADMIN
+    private String resetToken;
 
-  @OneToOne(
-      mappedBy = "userAuth",
-      cascade = CascadeType.ALL,
-      orphanRemoval = true,
-      fetch = FetchType.LAZY)
-  private User student;
+    @OneToOne(mappedBy = "userAuth", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private User student;
 
-  public UserAuth() {}
+    public UserAuth() {
+    }
 
-  public UserAuth(String loginId, String password, String role, User student) {
-    this.loginId = loginId;
-    this.password = password;
-    this.role = role;
-    this.student = student;
-  }
+    public UserAuth(String email, String password, String role, String resetToken, User student) {
+        this.email = email;
+        this.password = password;
+        this.role = role;
+        this.resetToken = resetToken;
+        this.student = student;
+    }
 
-  public UserAuth(String loginId, String password, String role) {
-    this.loginId = loginId;
-    this.password = password;
-    this.role = role;
-  }
+    public String getEmail() {
+        return email;
+    }
 
-  public String getLoginId() {
-    return loginId;
-  }
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
-  public void setLoginId(String loginId) {
-    this.loginId = loginId;
-  }
+    public String getPassword() {
+        return password;
+    }
 
-  public String getPassword() {
-    return password;
-  }
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
-  public void setPassword(String password) {
-    this.password = password;
-  }
+    public String getRole() {
+        return role;
+    }
 
-  public String getRole() {
-    return role;
-  }
+    public void setRole(String role) {
+        this.role = role;
+    }
 
-  public void setRole(String role) {
-    this.role = role;
-  }
+    public User getStudent() {
+        return student;
+    }
 
-  public User getStudent() {
-    return student;
-  }
+    public void setStudent(User student) {
+        this.student = student;
+    }
 
-  public void setStudent(User student) {
-    this.student = student;
-  }
+    public String getResetToken() {
+        return resetToken;
+    }
+
+    public void setResetToken(String resetToken) {
+        this.resetToken = resetToken;
+    }
 }
