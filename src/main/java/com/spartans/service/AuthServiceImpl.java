@@ -1,9 +1,7 @@
 package com.spartans.service;
 
-import com.spartans.dto.LoginRequestDTO;
-import com.spartans.dto.LoginResponseDTO;
-import com.spartans.dto.RegisterRequestDTO;
-import com.spartans.dto.StudentResponseDTO;
+import com.spartans.dto.*;
+import com.spartans.exception.DBException;
 import com.spartans.exception.InvalidLoginException;
 import com.spartans.exception.UserAlreadyExistException;
 import com.spartans.exception.UserNotFoundException;
@@ -12,9 +10,13 @@ import com.spartans.model.User;
 import com.spartans.model.UserAuth;
 import com.spartans.repository.AuthRepository;
 import com.spartans.util.JWTUtils;
+import com.spartans.util.UserContext;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -34,44 +36,61 @@ public class AuthServiceImpl implements AuthService {
 
 
     @Override
-    public StudentResponseDTO register(RegisterRequestDTO request) {
-        //Check if student registration already exists
-        if (authRepo.existsById(request.loginId())) {
-            throw new UserAlreadyExistException("Email is already registered: " + request.loginId());
+    public boolean register(RegisterRequestDTO request) {
+        //Check if user registration already exists
+        if (authRepo.existsById(request.email())) {
+            throw new UserAlreadyExistException("Email is already registered: " + request.email());
         }
         UserAuth userAuth = mapper.toUserAuthEntity(request);
         userAuth.setPassword(passwordEncoder.encode(request.password()));
-        User student = mapper.toUserEntity(request);
-        student.setUserAuth(userAuth);
-        userAuth.setStudent(student);
-        userAuth = authRepo.save(userAuth);
-        return mapper.toUserDto(userAuth.getStudent());
+        User user = mapper.toUserEntity(request);
+        user.setCreatedAt(LocalDateTime.now());
+        user.setUserAuth(userAuth);
+        userAuth.setStudent(user);
+        try {
+            userAuth = authRepo.save(userAuth);
+        } catch (DataIntegrityViolationException ex) {
+            throw new UserAlreadyExistException("Email already registered");
+        } catch (Exception ex) {
+            throw new DBException("Failed to save user");
+        }
+        return true;
     }
 
     @Override
     public LoginResponseDTO login(LoginRequestDTO request) {
-        UserAuth userAuth = authRepo.findById(request.loginId())
-                .orElseThrow(() -> new UserNotFoundException("Invalid login"));
-        System.out.println("login--");
-        //Student is not found for this login Id
+        UserAuth userAuth = authRepo.findById(request.email())
+                .orElseThrow(() -> new UserNotFoundException("Email is not registered"));
+
         if (userAuth.getRole().equals("STUDENT") && userAuth.getStudent() == null) {
-            System.out.println("login-1-");
             throw new UserNotFoundException("Student is not found");
         }
 
-       // Validate password
-        if (!passwordEncoder.matches(request.password(), userAuth.getPassword())) {
-            throw new InvalidLoginException("Login Id or password is wrong");
-        }
+        // Validate password
+        validatePassword(request.password(), userAuth.getPassword());
 
-
-        System.out.println("login-2-");
         // Generate JWT
-        String token = jwtUtil.generateToken(userAuth.getLoginId(), userAuth.getRole(), userAuth.getStudent());
-        System.out.println("login-3-"+userAuth.getLoginId());
-        return mapper.toLoginDto(userAuth, token);
-
+        String token = jwtUtil.generateToken(userAuth);
+        return mapper.toLoginDto(userAuth.getStudent(), userAuth.getEmail(), userAuth.getRole(), token);
     }
 
+    @Override
+    public boolean changePassword(PasswordRequestDto request) {
+        UserAuth userAuth = authRepo.findById(UserContext.getEmail())
+                .orElseThrow(() -> new UserNotFoundException("This user is not registered"));
+        if (validatePassword(request.oldPassword(), userAuth.getPassword())) {
+            userAuth.setPassword(passwordEncoder.encode(request.newPassword()));
+            authRepo.save(userAuth);
+            return true;
+        }
+        return false;
+    }
+
+    private boolean validatePassword(String password, String savedPassword) {
+        if (passwordEncoder.matches(password, savedPassword)) {
+            return true;
+        }
+        throw new InvalidLoginException("Login email or password is wrong");
+    }
 
 }

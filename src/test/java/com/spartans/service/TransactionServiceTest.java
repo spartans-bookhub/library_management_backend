@@ -58,7 +58,7 @@ class TransactionServiceImplTest {
 
         User user = new User();
         user.setUserId(userId);
-        user.setUserRole("STUDENT");
+        user.getUserAuth().setRole("STUDENT");
 
         Book book = new Book();
         book.setBookId(bookId);
@@ -102,7 +102,7 @@ class TransactionServiceImplTest {
 
         User user = new User();
         user.setUserId(userId);
-        user.setUserRole("STUDENT");
+        user.getUserAuth().setRole("STUDENT");
 
         Book book = new Book();
         book.setBookId(bookId);

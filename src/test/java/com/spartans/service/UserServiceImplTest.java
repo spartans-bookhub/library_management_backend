@@ -55,7 +55,7 @@ public class UserServiceImplTest {
 
         user = new User();
         user.setUserId(1L);
-        user.setUserRole("STUDENT");
+        user.getUserAuth().setRole("STUDENT");
 
         book = new Book();
         book.setBookId(10L);
@@ -109,7 +109,7 @@ public class UserServiceImplTest {
 
     @Test
     void borrowBook_NotAStudent_ThrowsInvalidOperationException() {
-        user.setUserRole("ADMIN");
+//        user.getUserAuth().setRole("ADMIN");
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         assertThrows(InvalidOperationException.class, () -> transactionService.borrowBook(1L, 10L));
     }
