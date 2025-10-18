@@ -24,10 +24,11 @@ public class Book {
     private LocalDateTime createdAt;
     private Integer totalCopies;
     private Integer availableCopies;
+    private Integer rating;
 
     public Book() {}
 
-    public Book(Long bookId, String bookTitle, String bookAuthor, String category, String isbn, String imageUrl, String publisherName, LocalDate publicationDate, Double price, LocalDateTime createdAt, Integer totalCopies, Integer availableCopies) {
+    public Book(Long bookId, String bookTitle, String bookAuthor, String category, String isbn, String imageUrl, String publisherName, LocalDate publicationDate, Double price, LocalDateTime createdAt, Integer totalCopies, Integer availableCopies, Integer rating) {
         this.bookId = bookId;
         this.bookTitle = bookTitle;
         this.bookAuthor = bookAuthor;
@@ -40,6 +41,7 @@ public class Book {
         this.createdAt = createdAt;
         this.totalCopies = totalCopies;
         this.availableCopies = availableCopies;
+        this.rating = rating;
     }
 
     public Long getBookId() {
@@ -97,6 +99,15 @@ public class Book {
     public void setAvailableCopies(Integer availableCopies) {
         this.availableCopies = availableCopies;
     }
+
+    public Integer getRating() {
+        return rating;
+    }
+
+    public void setRating(Integer rating) {
+        this.rating = rating;
+    }
+
 
 
     public LocalDateTime getCreatedAt() {
