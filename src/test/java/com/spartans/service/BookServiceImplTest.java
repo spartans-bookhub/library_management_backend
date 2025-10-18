@@ -4,8 +4,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import com.spartans.exception.BookNotFoundException;
-import com.spartans.exception.DuplicateBookException;
-import com.spartans.exception.ResourceNotFoundException;
 import com.spartans.model.Book;
 import com.spartans.repository.BookRepository;
 import java.time.LocalDate;
@@ -57,18 +55,18 @@ class BookServiceImplTest {
   }
 
   //  Test addBook duplicate ISBN
-//  @Test
-//  void testAddBook_DuplicateISBN() {
-//    when(bookRepository.findByIsbnIgnoreCase(book.getIsbn())).thenReturn(Optional.of(book));
-//
-//      DuplicateBookException exception =
-//        assertThrows(DuplicateBookException.class,
-//            () -> {
-//              bookService.addBook(book);
-//            });
-//
-//    assertEquals("Book with the same ISBN already exists", exception.getMessage());
-//  }
+  //  @Test
+  //  void testAddBook_DuplicateISBN() {
+  //    when(bookRepository.findByIsbnIgnoreCase(book.getIsbn())).thenReturn(Optional.of(book));
+  //
+  //      DuplicateBookException exception =
+  //        assertThrows(DuplicateBookException.class,
+  //            () -> {
+  //              bookService.addBook(book);
+  //            });
+  //
+  //    assertEquals("Book with the same ISBN already exists", exception.getMessage());
+  //  }
 
   //  Test getBookById success
   @Test
