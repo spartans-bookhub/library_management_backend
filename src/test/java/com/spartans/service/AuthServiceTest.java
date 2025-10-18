@@ -59,14 +59,12 @@ class AuthServiceTest {
         when(passwordEncoder.matches("pass", "encodedPass")).thenReturn(true);
         when(jwtUtil.generateToken("test@test.com", "STUDENT", userAuth.getStudent())).thenReturn("token123");
         LoginResponseDTO responseDTO = new LoginResponseDTO("test@test.com", "STUDENT", "token123");
-        when(mapper.toLoginResponseDto(userAuth, "token123")).thenReturn(responseDTO);
 
         LoginResponseDTO result = authService.login(request);
         assertNotNull(result);
         verify(authRepo).findById("test@test.com");
         verify(passwordEncoder).matches("pass", "encodedPass");
         verify(jwtUtil).generateToken("test@test.com", "STUDENT", userAuth.getStudent());
-        verify(mapper).toLoginResponseDto(userAuth, "token123");
     }
 
     @Test
@@ -126,12 +124,8 @@ class AuthServiceTest {
         userAuth.setStudent(student);
         StudentResponseDTO expectedResponse = new StudentResponseDTO(Long.valueOf(1000), "test", "test@test.com", "12345", "34street 3445");
         when(authRepo.existsById("test@test.com")).thenReturn(false);
-        when(mapper.toAuth(request)).thenReturn(userAuth);
         when(passwordEncoder.encode("password")).thenReturn("encoded-password");
-        when(mapper.toStudent(request)).thenReturn(student);
         when(authRepo.save(userAuth)).thenReturn(userAuth);
-        when(mapper.toStudentDto(student)).thenReturn(expectedResponse);
-
         StudentResponseDTO actualResponse = authService.register(request);
         assertNotNull(actualResponse);
         assertEquals("test", actualResponse.name());
@@ -141,7 +135,6 @@ class AuthServiceTest {
         verify(authRepo).existsById("test@test.com");
         verify(passwordEncoder).encode("password");
         verify(authRepo).save(userAuth);
-        verify(mapper).toStudentDto(student);
     }
 
     @Test

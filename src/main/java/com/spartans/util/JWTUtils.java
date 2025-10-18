@@ -2,10 +2,7 @@ package com.spartans.util;
 
 import com.spartans.exception.TokenValidationException;
 import com.spartans.model.User;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -44,4 +41,27 @@ public class JWTUtils {
 
     }
 
+    private Claims extractAllClaims(String token) {
+        return Jwts.parser()
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+    }
+
+    public String getRole(String token) {
+        return extractAllClaims(token).get("role", String.class);
+    }
+
+    public Long getUserId(String token) {
+        Map<String, Object> studentData = extractAllClaims(token).get("student", Map.class);
+        if (studentData != null && studentData.get("id") != null) {
+            return Long.parseLong(studentData.get("id").toString());
+        }
+        return null;
+    }
+
+    public String getLoginId(String token) {
+        return extractAllClaims(token).getSubject();
+    }
 }

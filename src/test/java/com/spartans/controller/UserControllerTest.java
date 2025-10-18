@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spartans.model.Book;
 import com.spartans.model.Transaction;
 import com.spartans.model.User;
-import com.spartans.service.UserService;
+import com.spartans.service.TransactionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -21,15 +21,15 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-public class StudentControllerTest {
+public class UserControllerTest {
 
     private MockMvc mockMvc;
 
     @Mock
-    private UserService userService;
+    private TransactionService transactionService;
 
     @InjectMocks
-    private StudentController studentController;
+    private TransactionController transactionController;
 
     private ObjectMapper objectMapper;
 
@@ -40,7 +40,7 @@ public class StudentControllerTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        mockMvc = MockMvcBuilders.standaloneSetup(studentController).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(transactionController).build();
         objectMapper = new ObjectMapper();
 
 
@@ -62,7 +62,7 @@ public class StudentControllerTest {
 
     @Test
     void testBorrowBook() throws Exception {
-        when(userService.borrowBook(anyLong(), anyLong())).thenReturn(transaction);
+        when(transactionService.borrowBook(anyLong(), anyLong())).thenReturn(transaction);
 
         mockMvc.perform(post("/api/students/10/borrow/100"))
                 .andExpect(status().isOk())
@@ -73,7 +73,7 @@ public class StudentControllerTest {
 
     @Test
     void testReturnBook() throws Exception {
-        when(userService.returnBook(anyLong(), anyLong())).thenReturn(transaction);
+        when(transactionService.returnBook(anyLong(), anyLong())).thenReturn(transaction);
 
         mockMvc.perform(post("/api/students/10/return/100"))
                 .andExpect(status().isOk())
@@ -82,7 +82,7 @@ public class StudentControllerTest {
 
     @Test
     void testGetBorrowedBooks() throws Exception {
-        when(userService.getBorrowedBooks(anyLong())).thenReturn(List.of(transaction));
+        when(transactionService.getBorrowedBooks(anyLong())).thenReturn(List.of(transaction));
 
         mockMvc.perform(get("/api/students/10/borrowed"))
                 .andExpect(status().isOk())
@@ -92,7 +92,7 @@ public class StudentControllerTest {
 
     @Test
     void testGetOverdueBooks() throws Exception {
-        when(userService.getOverdueBooks(anyLong())).thenReturn(List.of(transaction));
+        when(transactionService.getOverdueBooks(anyLong())).thenReturn(List.of(transaction));
 
         mockMvc.perform(get("/api/students/10/overdue"))
                 .andExpect(status().isOk())
@@ -101,7 +101,7 @@ public class StudentControllerTest {
 
     @Test
     void testGetBorrowingHistory() throws Exception {
-        when(userService.getBorrowingHistory(anyLong())).thenReturn(List.of(transaction));
+        when(transactionService.getBorrowingHistory(anyLong())).thenReturn(List.of(transaction));
 
         mockMvc.perform(get("/api/students/10/borrowing-history"))
                 .andExpect(status().isOk())
@@ -110,7 +110,7 @@ public class StudentControllerTest {
 
     @Test
     void testCanBorrowMoreBooks() throws Exception {
-        when(userService.canBorrowMoreBooks(anyLong())).thenReturn(true);
+        when(transactionService.canBorrowMoreBooks(anyLong())).thenReturn(true);
 
         mockMvc.perform(get("/api/students/10/can-borrow"))
                 .andExpect(status().isOk())
@@ -119,7 +119,7 @@ public class StudentControllerTest {
 
     @Test
     void testGetAvailableBooks() throws Exception {
-        when(userService.getAvailableBooks()).thenReturn(List.of(book));
+        when(transactionService.getAvailableBooks()).thenReturn(List.of(book));
 
         mockMvc.perform(get("/api/students/books/available"))
                 .andExpect(status().isOk())
@@ -129,7 +129,7 @@ public class StudentControllerTest {
 
     @Test
     void testIsBookAvailable() throws Exception {
-        when(userService.isBookAvailable(anyLong())).thenReturn(true);
+        when(transactionService.isBookAvailable(anyLong())).thenReturn(true);
 
         mockMvc.perform(get("/api/students/books/100/availability"))
                 .andExpect(status().isOk())
