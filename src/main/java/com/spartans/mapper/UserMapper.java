@@ -7,14 +7,13 @@ import com.spartans.model.User;
 import com.spartans.model.UserAuth;
 import org.mapstruct.Mapper;
 
-import java.time.LocalDateTime;
-
 @Mapper(componentModel = "spring")
 public interface UserMapper {
-    StudentResponseDTO toUserDto(User user);
-    User toUserEntity(RegisterRequestDTO registerRequest);
-    UserAuth toUserAuthEntity(RegisterRequestDTO registerRequest);
-    LoginResponseDTO toLoginDto(UserAuth userAuth, String token);
+  StudentResponseDTO toUserDto(User user);
+
+  User toUserEntity(RegisterRequestDTO registerRequest);
+
+  UserAuth toUserAuthEntity(RegisterRequestDTO registerRequest);
+
+  LoginResponseDTO toLoginDto(UserAuth userAuth, String token);
 }
-
-

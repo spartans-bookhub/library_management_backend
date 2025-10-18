@@ -4,6 +4,5 @@ import com.spartans.dto.StudentResponseDTO;
 
 public interface UserService {
 
-
-    StudentResponseDTO getStudent(Long id);
+  StudentResponseDTO getStudent(Long id);
 }
