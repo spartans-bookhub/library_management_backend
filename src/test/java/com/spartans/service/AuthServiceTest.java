@@ -1,159 +1,236 @@
 package com.spartans.service;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
-import com.spartans.dto.LoginRequestDTO;
-import com.spartans.dto.RegisterRequestDTO;
+import com.spartans.dto.*;
+import com.spartans.exception.DBException;
 import com.spartans.exception.InvalidLoginException;
 import com.spartans.exception.UserAlreadyExistException;
 import com.spartans.exception.UserNotFoundException;
 import com.spartans.mapper.DTOMapper;
+import com.spartans.mapper.UserMapper;
 import com.spartans.model.User;
 import com.spartans.model.UserAuth;
 import com.spartans.repository.AuthRepository;
 import com.spartans.util.JWTUtils;
-import java.util.Optional;
+import com.spartans.util.UserContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import java.util.Optional;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest
 class AuthServiceTest {
 
-  @Mock private AuthRepository authRepo;
 
-  @Mock private PasswordEncoder passwordEncoder;
+    @InjectMocks
+    private AuthServiceImpl authService;
 
-  @Mock private JWTUtils jwtUtil;
+    @Mock
+    private AuthRepository authRepo;
 
-  @Mock private DTOMapper mapper;
+    @Mock
+    private UserMapper mapper;
 
-  @InjectMocks private AuthServiceImpl authService;
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
-  @BeforeEach
-  void setup() {
-    MockitoAnnotations.openMocks(this);
-  }
+    @Mock
+    private JWTUtils jwtUtil;
 
-  //  @Test
-  //  void testLoginSuccess() {
-  //    LoginRequestDTO request = new LoginRequestDTO("test@test.com", "pass");
-  //    UserAuth userAuth = new UserAuth();
-  //    userAuth.setLoginId("test@test.com");
-  //    userAuth.setPassword("encodedPass");
-  //    userAuth.setRole("STUDENT");
-  //    userAuth.setStudent(new User());
-  //
-  //    when(authRepo.findById("test@test.com")).thenReturn(Optional.of(userAuth));
-  //    when(passwordEncoder.matches("pass", "encodedPass")).thenReturn(true);
-  //    when(jwtUtil.generateToken("test@test.com", "STUDENT", userAuth.getStudent()))
-  //        .thenReturn("token123");
-  //    LoginResponseDTO responseDTO = new LoginResponseDTO("test@test.com", "STUDENT", "token123");
-  //
-  //    LoginResponseDTO result = authService.login(request);
-  //    assertNotNull(result);
-  //    verify(authRepo).findById("test@test.com");
-  //    verify(passwordEncoder).matches("pass", "encodedPass");
-  //    verify(jwtUtil).generateToken("test@test.com", "STUDENT", userAuth.getStudent());
-  //  }
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
 
-  @Test
-  void testLoginUserNotFound() {
-    LoginRequestDTO request = new LoginRequestDTO("test@test.com", "pass");
-    when(authRepo.findById("test@test.com")).thenReturn(Optional.empty());
+    // --- register() ---
 
-    UserNotFoundException thrown =
-        assertThrows(
-            UserNotFoundException.class,
-            () -> {
-              authService.login(request);
-            });
+    @Test
+    void register_ShouldThrowUserAlreadyExistException_WhenEmailExists() {
+        RegisterRequestDTO request = mock(RegisterRequestDTO.class);
+        when(request.email()).thenReturn("test@example.com");
+        when(authRepo.existsById("test@example.com")).thenReturn(true);
 
-    assertEquals("Invalid login", thrown.getMessage());
-  }
+        assertThrows(UserAlreadyExistException.class, () -> authService.register(request));
+    }
 
-  @Test
-  void testLoginStudentNotFound() {
-    LoginRequestDTO request = new LoginRequestDTO("test@test.com", "pass");
-    UserAuth userAuth = new UserAuth();
-    userAuth.setLoginId("test@test.com");
-    userAuth.setRole("STUDENT");
-    userAuth.setStudent(null); // Student missing
+    @Test
+    void register_ShouldReturnTrue_WhenUserRegisteredSuccessfully() {
+        RegisterRequestDTO request = mock(RegisterRequestDTO.class);
+        when(request.email()).thenReturn("test@example.com");
+        when(request.password()).thenReturn("password");
 
-    when(authRepo.findById("test@test.com")).thenReturn(Optional.of(userAuth));
+        when(authRepo.existsById("test@example.com")).thenReturn(false);
 
-    UserNotFoundException thrown =
-        assertThrows(
-            UserNotFoundException.class,
-            () -> {
-              authService.login(request);
-            });
+        UserAuth userAuth = new UserAuth();
+        User student = new User();
 
-    assertEquals("Student is not found", thrown.getMessage());
-  }
+        when(mapper.toUserAuthEntity(request)).thenReturn(userAuth);
+        when(mapper.toUserEntity(request)).thenReturn(student);
 
-  @Test
-  void testLoginInvalidPassword() {
-    LoginRequestDTO request = new LoginRequestDTO("test@test.com", "wrongPass");
-    UserAuth userAuth = new UserAuth();
-    userAuth.setLoginId("test@test.com");
-    userAuth.setPassword("encodedPass");
-    userAuth.setRole("STUDENT");
-    userAuth.setStudent(new User());
+        when(passwordEncoder.encode("password")).thenReturn("encodedPassword");
 
-    when(authRepo.findById("test@test.com")).thenReturn(Optional.of(userAuth));
-    when(passwordEncoder.matches("wrongPass", "encodedPass")).thenReturn(false);
+        when(authRepo.save(userAuth)).thenReturn(userAuth);
 
-    InvalidLoginException thrown =
-        assertThrows(
-            InvalidLoginException.class,
-            () -> {
-              authService.login(request);
-            });
+        boolean result = authService.register(request);
 
-    assertEquals("Login Id or password is wrong", thrown.getMessage());
-  }
+        assertTrue(result);
+        assertEquals("encodedPassword", userAuth.getPassword());
+        assertNotNull(student.getCreatedAt());
+        assertEquals(student, userAuth.getStudent());
+        assertEquals(userAuth, student.getUserAuth());
+    }
 
-  //  @Test
-  //  void testRegisterSuccess() {
-  //
-  //    RegisterRequestDTO request = new RegisterRequestDTO("test@test.com", "password", "test");
-  //    UserAuth userAuth = new UserAuth();
-  //    User student = new User();
-  //    userAuth.setStudent(student);
-  //    StudentResponseDTO expectedResponse =
-  //        new StudentResponseDTO(
-  //            Long.valueOf(1000), "test", "test@test.com", "12345", "34street 3445");
-  //    when(authRepo.existsById("test@test.com")).thenReturn(false);
-  //    when(passwordEncoder.encode("password")).thenReturn("encoded-password");
-  //    when(authRepo.save(userAuth)).thenReturn(userAuth);
-  //    StudentResponseDTO actualResponse = authService.register(request);
-  //    assertNotNull(actualResponse);
-  //    assertEquals("test", actualResponse.name());
-  //    assertEquals("test@test.com", actualResponse.email());
-  //    assertEquals(1000, actualResponse.studentId());
-  //
-  //    verify(authRepo).existsById("test@test.com");
-  //    verify(passwordEncoder).encode("password");
-  //    verify(authRepo).save(userAuth);
-  //  }
+    @Test
+    void register_ShouldThrowUserAlreadyExistException_WhenDataIntegrityViolationException() {
+        RegisterRequestDTO request = mock(RegisterRequestDTO.class);
+        when(request.email()).thenReturn("test@example.com");
+        when(authRepo.existsById("test@example.com")).thenReturn(false);
+        UserAuth userAuth = new UserAuth();
+        User student = new User();
+        when(mapper.toUserAuthEntity(request)).thenReturn(userAuth);
+        when(mapper.toUserEntity(request)).thenReturn(student);
+        when(passwordEncoder.encode(anyString())).thenReturn("encoded");
 
-  @Test
-  void testRegisterUserAlreadyExistsThrowsException() {
+        doThrow(DataIntegrityViolationException.class).when(authRepo).save(userAuth);
 
-    RegisterRequestDTO request = new RegisterRequestDTO("test@test.com", "password", "test");
-    when(authRepo.existsById("test@test.com")).thenReturn(true);
-    assertThrows(
-        UserAlreadyExistException.class,
-        () -> {
-          authService.register(request);
-        });
-    verify(authRepo).existsById("test@test.com");
-    verifyNoMoreInteractions(authRepo, mapper, passwordEncoder);
-  }
+        assertThrows(UserAlreadyExistException.class, () -> authService.register(request));
+    }
+
+    @Test
+    void register_ShouldThrowDBException_OnGenericException() {
+        RegisterRequestDTO request = mock(RegisterRequestDTO.class);
+        when(request.email()).thenReturn("test@example.com");
+        when(authRepo.existsById("test@example.com")).thenReturn(false);
+        UserAuth userAuth = new UserAuth();
+        User student = new User();
+        when(mapper.toUserAuthEntity(request)).thenReturn(userAuth);
+        when(mapper.toUserEntity(request)).thenReturn(student);
+        when(passwordEncoder.encode(anyString())).thenReturn("encoded");
+
+        doThrow(new RuntimeException()).when(authRepo).save(userAuth);
+
+        assertThrows(DBException.class, () -> authService.register(request));
+    }
+
+    // --- login() ---
+
+    @Test
+    void login_ShouldThrowUserNotFoundException_WhenEmailNotFound() {
+        LoginRequestDTO request = mock(LoginRequestDTO.class);
+        when(request.email()).thenReturn("notfound@example.com");
+        when(authRepo.findById("notfound@example.com")).thenReturn(Optional.empty());
+
+        assertThrows(UserNotFoundException.class, () -> authService.login(request));
+    }
+
+    @Test
+    void login_ShouldThrowUserNotFoundException_WhenStudentNotFoundForStudentRole() {
+        LoginRequestDTO request = mock(LoginRequestDTO.class);
+        when(request.email()).thenReturn("student@example.com");
+
+        UserAuth userAuth = new UserAuth();
+        userAuth.setRole("STUDENT");
+        userAuth.setStudent(null); // student missing
+
+        when(authRepo.findById("student@example.com")).thenReturn(Optional.of(userAuth));
+
+        assertThrows(UserNotFoundException.class, () -> authService.login(request));
+    }
+
+    @Test
+    void login_ShouldThrowInvalidLoginException_WhenPasswordDoesNotMatch() {
+        LoginRequestDTO request = mock(LoginRequestDTO.class);
+        when(request.email()).thenReturn("user@example.com");
+        when(request.password()).thenReturn("wrongPassword");
+
+        UserAuth userAuth = new UserAuth();
+        userAuth.setRole("STUDENT");
+        userAuth.setStudent(new User());
+        userAuth.setPassword("encodedPassword");
+
+        when(authRepo.findById("user@example.com")).thenReturn(Optional.of(userAuth));
+        when(passwordEncoder.matches("wrongPassword", "encodedPassword")).thenReturn(false);
+
+        assertThrows(InvalidLoginException.class, () -> authService.login(request));
+    }
+
+    @Test
+    void login_ShouldReturnLoginResponse_WhenCredentialsAreValid() {
+        LoginRequestDTO request = mock(LoginRequestDTO.class);
+        when(request.email()).thenReturn("user@example.com");
+        when(request.password()).thenReturn("correctPassword");
+
+        UserAuth userAuth = new UserAuth();
+        userAuth.setRole("STUDENT");
+        User student = new User();
+        userAuth.setStudent(student);
+        userAuth.setEmail("user@example.com");
+        userAuth.setPassword("encodedPassword");
+
+        when(authRepo.findById("user@example.com")).thenReturn(Optional.of(userAuth));
+        when(passwordEncoder.matches("correctPassword", "encodedPassword")).thenReturn(true);
+        when(jwtUtil.generateToken(userAuth)).thenReturn("token123");
+
+        LoginResponseDTO responseDTO = mock(LoginResponseDTO.class);
+        when(mapper.toLoginDto(student, "user@example.com", "STUDENT", "token123")).thenReturn(responseDTO);
+
+        LoginResponseDTO result = authService.login(request);
+
+        assertEquals(responseDTO, result);
+    }
+
+    // --- changePassword() ---
+
+//    @Test
+//    void changePassword_ShouldThrowUserNotFoundException_WhenUserNotFound() {
+//        PasswordRequestDto request = mock(PasswordRequestDto.class);
+//        when(UserContext.getEmail()).thenReturn("notfound@example.com");
+//        when(authRepo.findById("notfound@example.com")).thenReturn(Optional.empty());
+//
+//        assertThrows(UserNotFoundException.class, () -> authService.changePassword(request));
+//    }
+
+//    @Test
+//    void changePassword_ShouldReturnFalse_WhenOldPasswordIsInvalid() {
+//        PasswordRequestDto request = mock(PasswordRequestDto.class);
+//        when(request.oldPassword()).thenReturn("wrongOldPass");
+//        when(UserContext.getEmail()).thenReturn("user@example.com");
+//
+//        UserAuth userAuth = new UserAuth();
+//        userAuth.setPassword("encodedPassword");
+//
+//        when(authRepo.findById("user@example.com")).thenReturn(Optional.of(userAuth));
+//        when(passwordEncoder.matches("wrongOldPass", "encodedPassword")).thenReturn(false);
+//
+//        boolean result = authService.changePassword(request);
+//
+//        assertFalse(result);
+//    }
+
+//    @Test
+//    void changePassword_ShouldReturnTrue_WhenPasswordChangedSuccessfully() {
+//        PasswordRequestDto request = mock(PasswordRequestDto.class);
+//        when(request.oldPassword()).thenReturn("oldPass");
+//        when(request.newPassword()).thenReturn("newPass");
+//        when(UserContext.getEmail()).thenReturn("user@example.com");
+//
+//        UserAuth userAuth = new UserAuth();
+//        userAuth.setPassword("encodedOldPass");
+//
+//        when(authRepo.findById("user@example.com")).thenReturn(Optional.of(userAuth));
+//        when(passwordEncoder.matches("oldPass", "encodedOldPass")).thenReturn(true);
+//        when(passwordEncoder.encode("newPass")).thenReturn("encodedNewPass");
+//        when(authRepo.save(userAuth)).thenReturn(userAuth);
+//
+//        boolean result = authService.changePassword(request);
+//
+//        assertTrue(result);
+//        assertEquals("encodedNewPass", userAuth.getPassword());
+//    }
 }
