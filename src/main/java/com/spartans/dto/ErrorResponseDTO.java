@@ -9,6 +9,9 @@ public class ErrorResponseDTO {
         this.status = status;
     }
 
+    public ErrorResponseDTO(int status, String message, String requestURI) {
+    }
+
     // Getters and setters
     public String getMessage() {
         return message;

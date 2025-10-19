@@ -12,45 +12,31 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
     private String userName;
-    private String email;
-    private String userRole; // ADMIN or STUDENT
-    private String userPassword;
     private LocalDateTime createdAt;
-    private String phone;
+    private String contactNumber;
     private String address;
 
     @JsonIgnore
     @OneToOne
-    @JoinColumn(name = "auth_login_id", referencedColumnName = "loginId")
+    @JoinColumn(name = "user_email", referencedColumnName = "email")
     private UserAuth userAuth;
 
 
     // Default constructor for JPA
-    public User() {}
+    public User() {
+    }
 
-    public User(String userName, String email, LocalDateTime createdAt) {
+    public User(String userName, String userEmail, LocalDateTime createdAt) {
         this.userName = userName;
-        this.email = email;
         this.createdAt = createdAt;
     }
 
-    public User(Long userId, String userName, String email, String userRole, String userPassword, LocalDateTime createdAt, String phone, String address, UserAuth userAuth) {
+    public User(Long userId, String userName, LocalDateTime createdAt, String contactNumber, String address, UserAuth userAuth) {
         this.userId = userId;
         this.userName = userName;
-        this.email = email;
-        this.userRole = userRole;
-        this.userPassword = userPassword;
         this.createdAt = createdAt;
-        this.phone = phone;
+        this.contactNumber = contactNumber;
         this.address = address;
-        this.userAuth = userAuth;
-    }
-
-    public UserAuth getUserAuth() {
-        return userAuth;
-    }
-
-    public void setUserAuth(UserAuth userAuth) {
         this.userAuth = userAuth;
     }
 
@@ -70,30 +56,6 @@ public class User {
         this.userName = userName;
     }
 
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getUserRole() {
-        return userRole;
-    }
-
-    public void setUserRole(String userRole) {
-        this.userRole = userRole;
-    }
-
-    public String getUserPassword() {
-        return userPassword;
-    }
-
-    public void setUserPassword(String userPassword) {
-        this.userPassword = userPassword;
-    }
-
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -102,12 +64,12 @@ public class User {
         this.createdAt = createdAt;
     }
 
-    public String getPhone() {
-        return phone;
+    public String getContactNumber() {
+        return contactNumber;
     }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
+    public void setContactNumber(String contactNumber) {
+        this.contactNumber = contactNumber;
     }
 
     public String getAddress() {
@@ -116,5 +78,13 @@ public class User {
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public UserAuth getUserAuth() {
+        return userAuth;
+    }
+
+    public void setUserAuth(UserAuth userAuth) {
+        this.userAuth = userAuth;
     }
 }

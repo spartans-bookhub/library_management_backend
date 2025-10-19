@@ -1,4 +1,3 @@
 package com.spartans.mapper;
 
-public class DTOMapper {
-}
+public class DTOMapper {}

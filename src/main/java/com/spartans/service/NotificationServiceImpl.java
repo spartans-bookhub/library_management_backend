@@ -3,9 +3,9 @@ package com.spartans.service;
 import com.spartans.model.Book;
 import com.spartans.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.stereotype.Service;
 
 @Service
 public class NotificationServiceImpl implements NotificationService {
@@ -24,13 +24,13 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void sendBookBorrowedNotification(User user, Book book) {
         String msg = String.format("Book Borrowed: You successfully borrowed '%s'.", book.getBookTitle());
-        sendEmail(user.getEmail(), "Library Borrow Confirmation", msg);
+        sendEmail(user.getUserAuth().getEmail(), "Library Borrow Confirmation", msg);
     }
 
     @Override
     public void sendBookReturnedNotification(User user, Book book) {
         String msg = String.format("Book Returned: You returned '%s'. Thank you!", book.getBookTitle());
-        sendEmail(user.getEmail(), "Library Return Confirmation", msg);
+        sendEmail(user.getUserAuth().getEmail(), "Library Return Confirmation", msg);
     }
 
     @Override
@@ -39,7 +39,7 @@ public class NotificationServiceImpl implements NotificationService {
                 "Late Return: You returned '%s' %d days late. Fine: $%.2f",
                 book.getBookTitle(), daysLate, fine
         );
-        sendEmail(user.getEmail(), "Library Late Return Notice", msg);
+        sendEmail(user.getUserAuth().getEmail(), "Library Late Return Notice", msg);
     }
 
     @Override
@@ -50,6 +50,6 @@ public class NotificationServiceImpl implements NotificationService {
         } else {
             msg = String.format("Reminder: Your borrowed book '%s' is due in %d day(s). Please return it on time.", book.getBookTitle(), daysLeft);
         }
-        sendEmail(user.getEmail(), "Library Due Date Reminder", msg);
+        sendEmail(user.getUserAuth().getEmail(), "Library Due Date Reminder", msg);
     }
 }

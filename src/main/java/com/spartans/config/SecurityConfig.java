@@ -1,6 +1,7 @@
 package com.spartans.config;
 
 import com.spartans.filter.JWTFilter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -9,24 +10,22 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
-public class SecurityConfiguration {
+public class SecurityConfig {
 
-
-    @Value("${jwt.secret}")
-    private String jwtSecret;
+    @Autowired
+    private JWTFilter jwtFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-//    @Bean
-//    public FilterRegistrationBean getFilter() {
-//        FilterRegistrationBean filterbean = new FilterRegistrationBean();
-//        filterbean.setFilter(new JWTFilter(jwtSecret));
-//        filterbean.addUrlPatterns("/api/students/*",
-//                "/api/admin/*");
-//        return filterbean;
-//
-//    }
+    @Bean
+    public FilterRegistrationBean getFilter() {
+        FilterRegistrationBean filterbean = new FilterRegistrationBean();
+        filterbean.setFilter(jwtFilter);
+        filterbean.addUrlPatterns("/api/*");
+        return filterbean;
+
+    }
 }
