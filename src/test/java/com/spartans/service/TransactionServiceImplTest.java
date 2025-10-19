@@ -6,7 +6,6 @@ import static org.mockito.Mockito.*;
 import com.spartans.config.LibraryConfig;
 import com.spartans.config.TransactionStatusConfig;
 import com.spartans.config.UserRoleConfig;
-import com.spartans.dto.BorrowBooksResponse;
 import com.spartans.exception.*;
 import com.spartans.model.*;
 import com.spartans.repository.BookRepository;
@@ -25,7 +24,6 @@ class TransactionServiceImplTest {
   @Mock private TransactionRepository transactionRepository;
   @Mock private UserRepository userRepository;
   @Mock private NotificationService notificationService;
-
 
   private LibraryConfig libraryConfig;
   private UserRoleConfig userRoleConfig;
