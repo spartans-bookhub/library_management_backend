@@ -15,7 +15,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
@@ -24,161 +23,174 @@ import org.springframework.http.ResponseEntity;
 
 class TransactionControllerTest {
 
-    @InjectMocks private TransactionController controller;
-    @Mock private TransactionService transactionService;
-    @Mock private HttpServletRequest request;
+  @InjectMocks private TransactionController controller;
+  @Mock private TransactionService transactionService;
+  @Mock private HttpServletRequest request;
 
-    @BeforeEach
-    void setup() {
-        MockitoAnnotations.openMocks(this);
+  @BeforeEach
+  void setup() {
+    MockitoAnnotations.openMocks(this);
+  }
+
+  private Transaction createMockTransaction(
+      Long transactionId, Long bookId, String title, Long userId) {
+    Transaction t = new Transaction();
+    Book b = new Book();
+    b.setBookId(bookId);
+    b.setBookTitle(title);
+    User u = new User();
+    u.setUserId(userId);
+    t.setTransactionId(transactionId);
+    t.setBook(b);
+    t.setUser(u);
+    t.setBorrowDate(LocalDate.now());
+    t.setDueDate(LocalDate.now().plusDays(7));
+    return t;
+  }
+
+  // Borrow single book
+  @Test
+  void testBorrowBook() {
+    Long userId = 1L;
+    Long bookId = 10L;
+
+    Transaction t = createMockTransaction(100L, bookId, "Book Title", userId);
+
+    when(transactionService.borrowBook(userId, bookId)).thenReturn(t);
+
+    try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
+      mockedUserContext.when(UserContext::getUserId).thenReturn(userId);
+
+      ResponseEntity<BorrowedBookDTO> response = controller.borrowBook(bookId, request);
+
+      assertEquals(200, response.getStatusCodeValue());
+      BorrowedBookDTO dto = response.getBody();
+      assertNotNull(dto);
+      assertEquals(100L, dto.getTransactionId());
+      assertEquals("Book Title", dto.getBookTitle());
+      assertEquals(bookId, dto.getBookId());
+      assertEquals(userId, dto.getUserId());
     }
 
-    private Transaction createMockTransaction(Long transactionId, Long bookId, String title, Long userId) {
-        Transaction t = new Transaction();
-        Book b = new Book();
-        b.setBookId(bookId);
-        b.setBookTitle(title);
-        User u = new User();
-        u.setUserId(userId);
-        t.setTransactionId(transactionId);
-        t.setBook(b);
-        t.setUser(u);
-        t.setBorrowDate(LocalDate.now());
-        t.setDueDate(LocalDate.now().plusDays(7));
-        return t;
+    verify(transactionService).borrowBook(userId, bookId);
+  }
+
+  // Borrow multiple books
+  @Test
+  void testBorrowMultipleBooks() {
+    Long userId = 1L;
+
+    BorrowBooksRequest req = new BorrowBooksRequest();
+    req.setBookIds(List.of(1L, 2L));
+
+    BorrowedBookDTO dto1 =
+        new BorrowedBookDTO(
+            1L, 1L, "Book A", userId, LocalDate.now(), LocalDate.now().plusDays(7), null, 0.0);
+    BorrowedBookDTO dto2 =
+        new BorrowedBookDTO(
+            2L, 2L, "Book B", userId, LocalDate.now(), LocalDate.now().plusDays(7), null, 0.0);
+
+    BorrowBooksResponse mockResponse = new BorrowBooksResponse(List.of(dto1, dto2), Map.of());
+
+    when(transactionService.borrowMultipleBooks(userId, req.getBookIds())).thenReturn(mockResponse);
+
+    try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
+      mockedUserContext.when(UserContext::getUserId).thenReturn(userId);
+
+      ResponseEntity<BorrowBooksResponse> response = controller.borrowMultipleBooks(req, request);
+
+      assertEquals(200, response.getStatusCodeValue());
+      assertNotNull(response.getBody());
+      assertEquals(2, response.getBody().getSuccess().size());
+      assertTrue(response.getBody().getFailed().isEmpty());
     }
 
-    // Borrow single book
-    @Test
-    void testBorrowBook() {
-        Long userId = 1L;
-        Long bookId = 10L;
+    verify(transactionService).borrowMultipleBooks(userId, req.getBookIds());
+  }
 
-        Transaction t = createMockTransaction(100L, bookId, "Book Title", userId);
+  // Return book
+  @Test
+  void testReturnBook() {
+    Long userId = 1L;
+    Long bookId = 10L;
 
-        when(transactionService.borrowBook(userId, bookId)).thenReturn(t);
+    BorrowedBookDTO returned =
+        new BorrowedBookDTO(
+            101L,
+            bookId,
+            "Returned Book",
+            userId,
+            LocalDate.now(),
+            LocalDate.now().plusDays(7),
+            LocalDate.now(),
+            0.0);
 
-        try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
-            mockedUserContext.when(UserContext::getUserId).thenReturn(userId);
+    when(transactionService.returnBook(userId, bookId)).thenReturn(returned);
 
-            ResponseEntity<BorrowedBookDTO> response = controller.borrowBook(bookId, request);
+    try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
+      mockedUserContext.when(UserContext::getUserId).thenReturn(userId);
 
-            assertEquals(200, response.getStatusCodeValue());
-            BorrowedBookDTO dto = response.getBody();
-            assertNotNull(dto);
-            assertEquals(100L, dto.getTransactionId());
-            assertEquals("Book Title", dto.getBookTitle());
-            assertEquals(bookId, dto.getBookId());
-            assertEquals(userId, dto.getUserId());
-        }
+      ResponseEntity<BorrowedBookDTO> response = controller.returnBook(bookId, request);
 
-        verify(transactionService).borrowBook(userId, bookId);
+      assertEquals(200, response.getStatusCodeValue());
+      assertEquals(101L, response.getBody().getTransactionId());
+      verify(transactionService).returnBook(userId, bookId);
     }
+  }
 
-    // Borrow multiple books
-    @Test
-    void testBorrowMultipleBooks() {
-        Long userId = 1L;
+  // Get borrowed books
+  @Test
+  void testGetBorrowedBooks() {
+    Long userId = 1L;
+    Transaction t1 = createMockTransaction(1L, 101L, "Alpha", userId);
+    Transaction t2 = createMockTransaction(2L, 102L, "Beta", userId);
 
-        BorrowBooksRequest req = new BorrowBooksRequest();
-        req.setBookIds(List.of(1L, 2L));
+    when(transactionService.getBorrowedBooks(userId)).thenReturn(List.of(t1, t2));
 
-        BorrowedBookDTO dto1 = new BorrowedBookDTO(1L, 1L, "Book A", userId, LocalDate.now(), LocalDate.now().plusDays(7), null, 0.0);
-        BorrowedBookDTO dto2 = new BorrowedBookDTO(2L, 2L, "Book B", userId, LocalDate.now(), LocalDate.now().plusDays(7), null, 0.0);
+    try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
+      mockedUserContext.when(UserContext::getUserId).thenReturn(userId);
 
-        BorrowBooksResponse mockResponse = new BorrowBooksResponse(List.of(dto1, dto2), Map.of());
+      ResponseEntity<List<BorrowedBookDTO>> response = controller.getBorrowedBooks(request);
 
-        when(transactionService.borrowMultipleBooks(userId, req.getBookIds())).thenReturn(mockResponse);
-
-        try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
-            mockedUserContext.when(UserContext::getUserId).thenReturn(userId);
-
-            ResponseEntity<BorrowBooksResponse> response = controller.borrowMultipleBooks(req, request);
-
-            assertEquals(200, response.getStatusCodeValue());
-            assertNotNull(response.getBody());
-            assertEquals(2, response.getBody().getSuccess().size());
-            assertTrue(response.getBody().getFailed().isEmpty());
-        }
-
-        verify(transactionService).borrowMultipleBooks(userId, req.getBookIds());
+      assertEquals(200, response.getStatusCodeValue());
+      assertEquals(2, response.getBody().size());
+      verify(transactionService).getBorrowedBooks(userId);
     }
+  }
 
-    // Return book
-    @Test
-    void testReturnBook() {
-        Long userId = 1L;
-        Long bookId = 10L;
+  // Get borrowing history
+  @Test
+  void testGetBorrowingHistory() {
+    Long userId = 1L;
+    Transaction t = createMockTransaction(200L, 99L, "History Book", userId);
 
-        BorrowedBookDTO returned = new BorrowedBookDTO(101L, bookId, "Returned Book", userId,
-                LocalDate.now(), LocalDate.now().plusDays(7), LocalDate.now(), 0.0);
+    when(transactionService.getBorrowingHistory(userId)).thenReturn(List.of(t));
 
-        when(transactionService.returnBook(userId, bookId)).thenReturn(returned);
+    try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
+      mockedUserContext.when(UserContext::getUserId).thenReturn(userId);
 
-        try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
-            mockedUserContext.when(UserContext::getUserId).thenReturn(userId);
+      ResponseEntity<List<BorrowedBookDTO>> response = controller.getBorrowingHistory(request);
 
-            ResponseEntity<BorrowedBookDTO> response = controller.returnBook(bookId, request);
-
-            assertEquals(200, response.getStatusCodeValue());
-            assertEquals(101L, response.getBody().getTransactionId());
-            verify(transactionService).returnBook(userId, bookId);
-        }
+      assertEquals(1, response.getBody().size());
+      assertEquals(200L, response.getBody().get(0).getTransactionId());
+      verify(transactionService).getBorrowingHistory(userId);
     }
+  }
 
-    // Get borrowed books
-    @Test
-    void testGetBorrowedBooks() {
-        Long userId = 1L;
-        Transaction t1 = createMockTransaction(1L, 101L, "Alpha", userId);
-        Transaction t2 = createMockTransaction(2L, 102L, "Beta", userId);
+  // Can borrow more books
+  @Test
+  void testCanBorrowMoreBooks() {
+    Long userId = 1L;
 
-        when(transactionService.getBorrowedBooks(userId)).thenReturn(List.of(t1, t2));
+    when(transactionService.canBorrowMoreBooks(userId)).thenReturn(true);
 
-        try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
-            mockedUserContext.when(UserContext::getUserId).thenReturn(userId);
+    try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
+      mockedUserContext.when(UserContext::getUserId).thenReturn(userId);
 
-            ResponseEntity<List<BorrowedBookDTO>> response = controller.getBorrowedBooks(request);
+      ResponseEntity<Boolean> response = controller.canBorrowMoreBooks(request);
 
-            assertEquals(200, response.getStatusCodeValue());
-            assertEquals(2, response.getBody().size());
-            verify(transactionService).getBorrowedBooks(userId);
-        }
+      assertTrue(response.getBody());
+      verify(transactionService).canBorrowMoreBooks(userId);
     }
-
-    // Get borrowing history
-    @Test
-    void testGetBorrowingHistory() {
-        Long userId = 1L;
-        Transaction t = createMockTransaction(200L, 99L, "History Book", userId);
-
-        when(transactionService.getBorrowingHistory(userId)).thenReturn(List.of(t));
-
-        try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
-            mockedUserContext.when(UserContext::getUserId).thenReturn(userId);
-
-            ResponseEntity<List<BorrowedBookDTO>> response = controller.getBorrowingHistory(request);
-
-            assertEquals(1, response.getBody().size());
-            assertEquals(200L, response.getBody().get(0).getTransactionId());
-            verify(transactionService).getBorrowingHistory(userId);
-        }
-    }
-
-    // Can borrow more books
-    @Test
-    void testCanBorrowMoreBooks() {
-        Long userId = 1L;
-
-        when(transactionService.canBorrowMoreBooks(userId)).thenReturn(true);
-
-        try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
-            mockedUserContext.when(UserContext::getUserId).thenReturn(userId);
-
-            ResponseEntity<Boolean> response = controller.canBorrowMoreBooks(request);
-
-            assertTrue(response.getBody());
-            verify(transactionService).canBorrowMoreBooks(userId);
-        }
-    }
+  }
 }
