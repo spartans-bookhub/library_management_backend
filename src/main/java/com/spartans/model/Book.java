@@ -1,7 +1,6 @@
 package com.spartans.model;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -9,9 +8,9 @@ import java.time.LocalDateTime;
 @Table(name = "book")
 public class Book {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long bookId;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long bookId;
 
     private String bookTitle;
     private String bookAuthor;

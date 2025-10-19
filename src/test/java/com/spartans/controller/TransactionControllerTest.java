@@ -1,120 +1,111 @@
 package com.spartans.controller;
 
+import com.spartans.model.Book;
 import com.spartans.model.Transaction;
 import com.spartans.service.TransactionService;
-import com.spartans.util.JWTUtils;
+import com.spartans.util.UserContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.http.ResponseEntity;
 
-import jakarta.servlet.http.HttpServletRequest;
+import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 class TransactionControllerTest {
 
-    @InjectMocks
-    private TransactionController controller;
-
     @Mock
     private TransactionService transactionService;
 
-    @Mock
-    private JWTUtils jwtUtils;
+    @InjectMocks
+    private TransactionController transactionController;
 
-    @Mock
-    private HttpServletRequest request;
+    private static final Long USER_ID = 1L;
 
     @BeforeEach
-    void setup() {
+    void setUp() {
         MockitoAnnotations.openMocks(this);
+        // Mock UserContext to return USER_ID
+        UserContext.setUserId(USER_ID);
     }
 
     @Test
-    void testBorrowBook() {
-        Long userId = 1L;
-        Long bookId = 10L;
-        Transaction mockTransaction = new Transaction();
-        mockTransaction.setTransactionId(100L);
+    void borrowBook_ShouldReturnTransaction() {
+        Transaction transaction = new Transaction();
+        when(transactionService.borrowBook(USER_ID, 100L)).thenReturn(transaction);
 
-        when(request.getHeader("Authorization")).thenReturn("Bearer dummyToken");
-        when(jwtUtils.getUserId("dummyToken")).thenReturn(userId);
-        when(transactionService.borrowBook(userId, bookId)).thenReturn(mockTransaction);
+        ResponseEntity<Transaction> response = transactionController.borrowBook(100L, null);
 
-        ResponseEntity<Transaction> response = controller.borrowBook(bookId, request);
-
-        assertEquals(200, response.getStatusCodeValue());
-        assertEquals(100L, response.getBody().getTransactionId());
-        verify(transactionService, times(1)).borrowBook(userId, bookId);
+        assertEquals(transaction, response.getBody());
+        verify(transactionService, times(1)).borrowBook(USER_ID, 100L);
     }
 
     @Test
-    void testReturnBook() {
-        Long userId = 1L;
-        Long bookId = 10L;
-        Transaction mockTransaction = new Transaction();
-        mockTransaction.setTransactionId(101L);
+    void returnBook_ShouldReturnTransaction() {
+        Transaction transaction = new Transaction();
+        when(transactionService.returnBook(USER_ID, 101L)).thenReturn(transaction);
 
-        when(request.getHeader("Authorization")).thenReturn("Bearer dummyToken");
-        when(jwtUtils.getUserId("dummyToken")).thenReturn(userId);
-        when(transactionService.returnBook(userId, bookId)).thenReturn(mockTransaction);
+        ResponseEntity<Transaction> response = transactionController.returnBook(101L, null);
 
-        ResponseEntity<Transaction> response = controller.returnBook(bookId, request);
-
-        assertEquals(200, response.getStatusCodeValue());
-        assertEquals(101L, response.getBody().getTransactionId());
-        verify(transactionService, times(1)).returnBook(userId, bookId);
+        assertEquals(transaction, response.getBody());
+        verify(transactionService, times(1)).returnBook(USER_ID, 101L);
     }
 
     @Test
-    void testGetBorrowedBooks() {
-        Long userId = 1L;
-        Transaction t1 = new Transaction();
-        t1.setTransactionId(1L);
-        Transaction t2 = new Transaction();
-        t2.setTransactionId(2L);
+    void getBorrowedBooks_ShouldReturnList() {
+        List<Transaction> transactions = Arrays.asList(new Transaction(), new Transaction());
+        when(transactionService.getBorrowedBooks(USER_ID)).thenReturn(transactions);
 
-        when(request.getHeader("Authorization")).thenReturn("Bearer dummyToken");
-        when(jwtUtils.getUserId("dummyToken")).thenReturn(userId);
-        when(transactionService.getBorrowedBooks(userId)).thenReturn(List.of(t1, t2));
+        ResponseEntity<List<Transaction>> response = transactionController.getBorrowedBooks(null);
 
-        ResponseEntity<List<Transaction>> response = controller.getBorrowedBooks(request);
-
-        assertEquals(2, response.getBody().size());
-        verify(transactionService, times(1)).getBorrowedBooks(userId);
+        assertEquals(transactions, response.getBody());
+        verify(transactionService, times(1)).getBorrowedBooks(USER_ID);
     }
 
     @Test
-    void testGetBorrowingHistory() {
-        Long userId = 1L;
-        Transaction t = new Transaction();
-        t.setTransactionId(200L);
+    void canBorrowMoreBooks_ShouldReturnBoolean() {
+        when(transactionService.canBorrowMoreBooks(USER_ID)).thenReturn(true);
 
-        when(request.getHeader("Authorization")).thenReturn("Bearer dummyToken");
-        when(jwtUtils.getUserId("dummyToken")).thenReturn(userId);
-        when(transactionService.getBorrowingHistory(userId)).thenReturn(List.of(t));
+        ResponseEntity<Boolean> response = transactionController.canBorrowMoreBooks(null);
 
-        ResponseEntity<List<Transaction>> response = controller.getBorrowingHistory(request);
-
-        assertEquals(1, response.getBody().size());
-        assertEquals(200L, response.getBody().get(0).getTransactionId());
-        verify(transactionService, times(1)).getBorrowingHistory(userId);
+        assertEquals(true, response.getBody());
+        verify(transactionService, times(1)).canBorrowMoreBooks(USER_ID);
     }
 
     @Test
-    void testCanBorrowMoreBooks() {
-        Long userId = 1L;
+    void getAvailableBooks_ShouldReturnList() {
+        List<Book> books = Arrays.asList(new Book(), new Book());
+        when(transactionService.getAvailableBooks()).thenReturn(books);
 
-        when(request.getHeader("Authorization")).thenReturn("Bearer dummyToken");
-        when(jwtUtils.getUserId("dummyToken")).thenReturn(userId);
-        when(transactionService.canBorrowMoreBooks(userId)).thenReturn(true);
+        ResponseEntity<List<Book>> response = transactionController.getAvailableBooks();
 
-        ResponseEntity<Boolean> response = controller.canBorrowMoreBooks(request);
+        assertEquals(books, response.getBody());
+        verify(transactionService, times(1)).getAvailableBooks();
+    }
 
-        assertTrue(response.getBody());
-        verify(transactionService, times(1)).canBorrowMoreBooks(userId);
+    @Test
+    void updateBookInventory_ShouldReturnBook() {
+        Book book = new Book();
+        when(transactionService.updateBookInventory(5L, 3)).thenReturn(book);
+
+        ResponseEntity<Book> response = transactionController.updateBookInventory(5L, 3);
+
+        assertEquals(book, response.getBody());
+        verify(transactionService, times(1)).updateBookInventory(5L, 3);
+    }
+
+    @Test
+    void isBookAvailable_ShouldReturnBoolean() {
+        when(transactionService.isBookAvailable(10L)).thenReturn(true);
+
+        ResponseEntity<Boolean> response = transactionController.isBookAvailable(10L);
+
+        assertEquals(true, response.getBody());
+        verify(transactionService, times(1)).isBookAvailable(10L);
     }
 }

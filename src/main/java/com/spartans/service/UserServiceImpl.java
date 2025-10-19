@@ -17,7 +17,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public StudentResponseDTO getStudent(Long id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("Student not found"));
+        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found with this email"));
         return mapper.toUserDto(user);
     }
 }

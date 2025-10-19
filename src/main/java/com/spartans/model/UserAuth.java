@@ -7,9 +7,10 @@ import jakarta.persistence.*;
 public class UserAuth {
 
     @Id
-    private String loginId;
+    private String email;
     private String password;
     private String role;  //STUDENT/ ADMIN
+    private String resetToken;
 
     @OneToOne(mappedBy = "userAuth", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private User student;
@@ -17,26 +18,20 @@ public class UserAuth {
     public UserAuth() {
     }
 
-    public UserAuth(String loginId, String password, String role, User student) {
-        this.loginId = loginId;
+    public UserAuth(String email, String password, String role, String resetToken, User student) {
+        this.email = email;
         this.password = password;
         this.role = role;
+        this.resetToken = resetToken;
         this.student = student;
     }
 
-
-    public UserAuth(String loginId, String password, String role) {
-        this.loginId = loginId;
-        this.password = password;
-        this.role = role;
+    public String getEmail() {
+        return email;
     }
 
-    public String getLoginId() {
-        return loginId;
-    }
-
-    public void setLoginId(String loginId) {
-        this.loginId = loginId;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getPassword() {
@@ -61,5 +56,13 @@ public class UserAuth {
 
     public void setStudent(User student) {
         this.student = student;
+    }
+
+    public String getResetToken() {
+        return resetToken;
+    }
+
+    public void setResetToken(String resetToken) {
+        this.resetToken = resetToken;
     }
 }

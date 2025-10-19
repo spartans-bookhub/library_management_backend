@@ -4,6 +4,7 @@ import com.spartans.model.Book;
 import com.spartans.model.Transaction;
 import com.spartans.service.TransactionService;
 import com.spartans.util.JWTUtils;
+import com.spartans.util.UserContext;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,69 +19,45 @@ public class TransactionController {
     @Autowired
     private TransactionService transactionService;
 
-    @Autowired
-    private JWTUtils jwtUtils;
-
-    // Utility - Extract Bearer token
-    private String extractToken(HttpServletRequest request) {
-        String header = request.getHeader("Authorization");
-        if (header != null && header.startsWith("Bearer ")) {
-            return header.substring(7);
-        }
-        return null;
-    }
-
     // Borrow a book
     @PostMapping("/book/{bookId}/borrow")
     public ResponseEntity<Transaction> borrowBook(@PathVariable Long bookId, HttpServletRequest request) {
-        String token = extractToken(request);
-        Long userId = jwtUtils.getUserId(token);
-        Transaction transaction = transactionService.borrowBook(userId, bookId);
+        Transaction transaction = transactionService.borrowBook(UserContext.getUserId(), bookId);
         return ResponseEntity.ok(transaction);
     }
 
     // Return a book
     @PostMapping("/book/{bookId}/return")
     public ResponseEntity<Transaction> returnBook(@PathVariable Long bookId, HttpServletRequest request) {
-        String token = extractToken(request);
-        Long userId = jwtUtils.getUserId(token);
-        Transaction transaction = transactionService.returnBook(userId, bookId);
+        Transaction transaction = transactionService.returnBook(UserContext.getUserId(), bookId);
         return ResponseEntity.ok(transaction);
     }
 
     // Get all borrowed books for the logged-in student
     @GetMapping("/borrowed")
     public ResponseEntity<List<Transaction>> getBorrowedBooks(HttpServletRequest request) {
-        String token = extractToken(request);
-        Long userId = jwtUtils.getUserId(token);
-        List<Transaction> borrowedBooks = transactionService.getBorrowedBooks(userId);
+        List<Transaction> borrowedBooks = transactionService.getBorrowedBooks(UserContext.getUserId());
         return ResponseEntity.ok(borrowedBooks);
     }
 
     // Get overdue books
     @GetMapping("/overdue")
     public ResponseEntity<List<Transaction>> getOverdueBooks(HttpServletRequest request) {
-        String token = extractToken(request);
-        Long userId = jwtUtils.getUserId(token);
-        List<Transaction> overdueBooks = transactionService.getOverdueBooks(userId);
+        List<Transaction> overdueBooks = transactionService.getOverdueBooks(UserContext.getUserId());
         return ResponseEntity.ok(overdueBooks);
     }
 
     // Get borrowing history
     @GetMapping("/history")
     public ResponseEntity<List<Transaction>> getBorrowingHistory(HttpServletRequest request) {
-        String token = extractToken(request);
-        Long userId = jwtUtils.getUserId(token);
-        List<Transaction> history = transactionService.getBorrowingHistory(userId);
+        List<Transaction> history = transactionService.getBorrowingHistory(UserContext.getUserId());
         return ResponseEntity.ok(history);
     }
 
     // Check if student can borrow more books
     @GetMapping("/can-borrow")
     public ResponseEntity<Boolean> canBorrowMoreBooks(HttpServletRequest request) {
-        String token = extractToken(request);
-        Long userId = jwtUtils.getUserId(token);
-        boolean canBorrow = transactionService.canBorrowMoreBooks(userId);
+        boolean canBorrow = transactionService.canBorrowMoreBooks(UserContext.getUserId());
         return ResponseEntity.ok(canBorrow);
     }
 
@@ -144,4 +121,14 @@ public class TransactionController {
         List<Book> lowStockBooks = transactionService.getBooksWithLowStock(threshold);
         return ResponseEntity.ok(lowStockBooks);
     }
+
+    //
+//    @PostMapping("/book/{bookId}/borrow")
+//    public ResponseEntity<Transaction> borrowBook(@PathVariable Long bookId, HttpServletRequest request) {
+//        String token = extractToken(request);
+//        Long userId = jwtUtils.getUserId(token);
+//        Transaction transaction = transactionService.borrowBook(userId, bookId);
+//        return ResponseEntity.ok(transaction);
+//    }
+
 }

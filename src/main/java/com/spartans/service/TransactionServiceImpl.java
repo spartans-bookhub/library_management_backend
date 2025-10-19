@@ -1,8 +1,8 @@
 package com.spartans.service;
 
 import com.spartans.config.LibraryConfig;
-import com.spartans.config.UserRoleConfig;
 import com.spartans.config.TransactionStatusConfig;
+import com.spartans.config.UserRoleConfig;
 import com.spartans.exception.*;
 import com.spartans.mapper.UserMapper;
 import com.spartans.model.Book;
@@ -51,7 +51,7 @@ public class TransactionServiceImpl implements TransactionService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
-        if (!userRoleConfig.getStudent().equals(user.getUserRole())) {
+        if (!userRoleConfig.getStudent().equals(user.getUserAuth().getRole())) {
             throw new InvalidOperationException("Only students can borrow books");
         }
 
@@ -248,5 +248,17 @@ public class TransactionServiceImpl implements TransactionService {
     public List<Book> getBooksWithLowStock(Integer threshold) {
         int actualThreshold = threshold != null ? threshold : libraryConfig.getLowStockThreshold();
         return bookRepository.findByAvailableCopiesLessThanEqual(actualThreshold);
+    }
+
+    public void setLibraryConfig(LibraryConfig libraryConfig) {
+        this.libraryConfig = libraryConfig;
+    }
+
+    public void setUserRoleConfig(UserRoleConfig userRoleConfig) {
+        this.userRoleConfig = userRoleConfig;
+    }
+
+    public void setTransactionStatusConfig(TransactionStatusConfig transactionStatusConfig) {
+        this.transactionStatusConfig = transactionStatusConfig;
     }
 }

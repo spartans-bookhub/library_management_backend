@@ -1,5 +1,7 @@
 package com.spartans.exception;
 
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.SignatureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -50,4 +52,25 @@ public class GlobalExceptionHandler {
         });
        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler({SignatureException.class, MalformedJwtException.class})
+    public ResponseEntity<String> handleInvalidJwt(RuntimeException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid JWT token.");
+    }
+
+    @ExceptionHandler({UserAlreadyExistException.class})
+    public ResponseEntity<String> handleUserNotFoundException(UserAlreadyExistException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+
+    @ExceptionHandler({UserNotFoundException.class})
+    public ResponseEntity<String> handleUserNotFoundException(UserNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler({InvalidLoginException.class, TokenValidationException.class})
+    public ResponseEntity<String> handleInvalidLoginAndTokenException(RuntimeException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
+    }
+
 }
