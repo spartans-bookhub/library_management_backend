@@ -22,12 +22,16 @@ public class ReminderScheduler {
     List<Transaction> borrowedTransactions =
         transactionRepository.findByTransactionStatus("BORROWED");
 
-      for (Transaction transaction : borrowedTransactions) {
-          try {
-              ReminderUtils.sendDueDateReminder(transaction, notificationService);
-          } catch (Exception e) {
-              System.err.println("Failed to send reminder for transaction " + transaction.getTransactionId() + ": " + e.getMessage());
-          }
+    for (Transaction transaction : borrowedTransactions) {
+      try {
+        ReminderUtils.sendDueDateReminder(transaction, notificationService);
+      } catch (Exception e) {
+        System.err.println(
+            "Failed to send reminder for transaction "
+                + transaction.getTransactionId()
+                + ": "
+                + e.getMessage());
       }
+    }
   }
 }
