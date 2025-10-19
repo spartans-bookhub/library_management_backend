@@ -1,4 +1,12 @@
 package com.spartans.dto;
 
 public record StudentResponseDTO(
-    Long studentId, String name, String email, String phone, String address) {}
+        String userName,
+        String email,
+        String contactNumber,
+        String address,
+        String role
+
+){
+
+}
