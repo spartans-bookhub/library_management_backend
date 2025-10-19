@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 import com.spartans.config.LibraryConfig;
 import com.spartans.config.TransactionStatusConfig;
 import com.spartans.config.UserRoleConfig;
+import com.spartans.dto.BorrowBooksResponse;
 import com.spartans.exception.*;
 import com.spartans.model.*;
 import com.spartans.repository.BookRepository;
@@ -25,7 +26,7 @@ class TransactionServiceImplTest {
   @Mock private UserRepository userRepository;
   @Mock private NotificationService notificationService;
 
-  // Real config instances
+
   private LibraryConfig libraryConfig;
   private UserRoleConfig userRoleConfig;
   private TransactionStatusConfig transactionStatusConfig;
@@ -52,13 +53,12 @@ class TransactionServiceImplTest {
     transactionStatusConfig.setReturned("RETURNED");
     transactionStatusConfig.setDue("DUE");
 
-    // Inject configs into service
     transactionService.setLibraryConfig(libraryConfig);
     transactionService.setUserRoleConfig(userRoleConfig);
     transactionService.setTransactionStatusConfig(transactionStatusConfig);
   }
 
-  // ------------------- borrowBook Tests -------------------
+  //  borrowBook Tests
 
   @Test
   void borrowBookSuccessful() {
@@ -152,7 +152,7 @@ class TransactionServiceImplTest {
     assertThrows(BorrowLimitExceededException.class, () -> transactionService.borrowBook(1L, 1L));
   }
 
-  // ------------------- returnBook Tests -------------------
+  // returnBook Tests
 
   @Test
   void returnBookTransactionNotFoundThrowsException() {
@@ -182,7 +182,7 @@ class TransactionServiceImplTest {
     assertThrows(ResourceNotFoundException.class, () -> transactionService.returnBook(1L, 1L));
   }
 
-  // ------------------- Utility Methods Tests -------------------
+  // Utility Methods Tests
 
   @Test
   void getBorrowedBooksUserNotFoundThrowsException() {
@@ -223,7 +223,7 @@ class TransactionServiceImplTest {
         () -> transactionService.updateBookAvailability(1L, "YES"));
   }
 
-  // ------------------- Helper Method -------------------
+  // Helper Method
 
   private User createUser(Long id, String role) {
     User user = new User();
