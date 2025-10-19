@@ -1,6 +1,5 @@
 package com.spartans.util;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class UserContext {
@@ -22,24 +21,6 @@ public class UserContext {
   public static String getRole() {
     Map<String, Object> map = currentUser.get();
     return (map != null) ? (String) map.get("role") : "";
-  }
-
-  public static void setUserId(Long id) {
-    Map<String, Object> map = currentUser.get();
-    if (map == null) {
-      map = new HashMap<>();
-      currentUser.set(map);
-    }
-    map.put("id", id);
-  }
-
-  public static void setRole(String role) {
-    Map<String, Object> map = currentUser.get();
-    if (map == null) {
-      map = new HashMap<>();
-      currentUser.set(map);
-    }
-    map.put("role", role);
   }
 
   public static String getEmail() {
