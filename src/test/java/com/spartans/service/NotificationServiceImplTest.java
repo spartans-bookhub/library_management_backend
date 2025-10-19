@@ -1,5 +1,8 @@
 package com.spartans.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.*;
+
 import com.spartans.model.Book;
 import com.spartans.model.Notification;
 import com.spartans.model.User;
@@ -11,82 +14,85 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
-
 class NotificationServiceImplTest {
 
-    private JavaMailSender mailSender;
-    private NotificationRepository notificationRepository;
-    private NotificationServiceImpl notificationService;
+  private JavaMailSender mailSender;
+  private NotificationRepository notificationRepository;
+  private NotificationServiceImpl notificationService;
 
-    @BeforeEach
-    void setUp() {
-        mailSender = mock(JavaMailSender.class);
-        notificationRepository = mock(NotificationRepository.class);
+  @BeforeEach
+  void setUp() {
+    mailSender = mock(JavaMailSender.class);
+    notificationRepository = mock(NotificationRepository.class);
 
-        notificationService = new NotificationServiceImpl();
-        notificationService.mailSender = mailSender; // inject mock
-        notificationService.notificationRepository = notificationRepository; // inject mock
-    }
+    notificationService = new NotificationServiceImpl();
+    notificationService.mailSender = mailSender; // inject mock
+    notificationService.notificationRepository = notificationRepository; // inject mock
+  }
 
-    @Test
-    void testSendBookBorrowedNotification() {
-        UserAuth auth = new UserAuth();
-        auth.setEmail("user@example.com");
+  @Test
+  void testSendBookBorrowedNotification() {
+    UserAuth auth = new UserAuth();
+    auth.setEmail("user@example.com");
 
-        User user = new User();
-        user.setUserAuth(auth);
+    User user = new User();
+    user.setUserAuth(auth);
 
-        Book book = new Book();
-        book.setBookTitle("Mockito for Beginners");
+    Book book = new Book();
+    book.setBookTitle("Mockito for Beginners");
 
-        notificationService.sendBookBorrowedNotification(user, book);
+    notificationService.sendBookBorrowedNotification(user, book);
 
-        // Verify email was sent
-        ArgumentCaptor<SimpleMailMessage> emailCaptor = ArgumentCaptor.forClass(SimpleMailMessage.class);
-        verify(mailSender, times(1)).send(emailCaptor.capture());
+    // Verify email was sent
+    ArgumentCaptor<SimpleMailMessage> emailCaptor =
+        ArgumentCaptor.forClass(SimpleMailMessage.class);
+    verify(mailSender, times(1)).send(emailCaptor.capture());
 
-        SimpleMailMessage sentMessage = emailCaptor.getValue();
-        assertEquals("user@example.com", sentMessage.getTo()[0]);
-        assertEquals("Library Borrow Confirmation", sentMessage.getSubject());
-        assertEquals("Book Borrowed: You successfully borrowed 'Mockito for Beginners'.", sentMessage.getText());
+    SimpleMailMessage sentMessage = emailCaptor.getValue();
+    assertEquals("user@example.com", sentMessage.getTo()[0]);
+    assertEquals("Library Borrow Confirmation", sentMessage.getSubject());
+    assertEquals(
+        "Book Borrowed: You successfully borrowed 'Mockito for Beginners'.", sentMessage.getText());
 
-        // Verify notification was saved
-        ArgumentCaptor<Notification> notificationCaptor = ArgumentCaptor.forClass(Notification.class);
-        verify(notificationRepository, times(1)).save(notificationCaptor.capture());
+    // Verify notification was saved
+    ArgumentCaptor<Notification> notificationCaptor = ArgumentCaptor.forClass(Notification.class);
+    verify(notificationRepository, times(1)).save(notificationCaptor.capture());
 
-        Notification savedNotification = notificationCaptor.getValue();
-        assertEquals(user, savedNotification.getUser());
-        assertEquals(book, savedNotification.getBook());
-        assertEquals("BORROWED", savedNotification.getType());
-        assertEquals("Book Borrowed: You successfully borrowed 'Mockito for Beginners'.", savedNotification.getMessage());
-        assertEquals("SENT", savedNotification.getStatus());
-    }
+    Notification savedNotification = notificationCaptor.getValue();
+    assertEquals(user, savedNotification.getUser());
+    assertEquals(book, savedNotification.getBook());
+    assertEquals("BORROWED", savedNotification.getType());
+    assertEquals(
+        "Book Borrowed: You successfully borrowed 'Mockito for Beginners'.",
+        savedNotification.getMessage());
+    assertEquals("SENT", savedNotification.getStatus());
+  }
 
-    @Test
-    void testSendEmailWithNullRecipient() {
-        // User without email
-        User user = new User();
-        user.setUserAuth(null);
+  @Test
+  void testSendEmailWithNullRecipient() {
+    // User without email
+    User user = new User();
+    user.setUserAuth(null);
 
-        Book book = new Book();
-        book.setBookTitle("Mockito for Beginners");
+    Book book = new Book();
+    book.setBookTitle("Mockito for Beginners");
 
-        notificationService.sendBookBorrowedNotification(user, book);
+    notificationService.sendBookBorrowedNotification(user, book);
 
-        // Email should never be sent
-        verify(mailSender, never()).send(any(SimpleMailMessage.class));
+    // Email should never be sent
+    verify(mailSender, never()).send(any(SimpleMailMessage.class));
 
-        // Notification should still be saved with FAILED status
-        ArgumentCaptor<Notification> notificationCaptor = ArgumentCaptor.forClass(Notification.class);
-        verify(notificationRepository, times(1)).save(notificationCaptor.capture());
+    // Notification should still be saved with FAILED status
+    ArgumentCaptor<Notification> notificationCaptor = ArgumentCaptor.forClass(Notification.class);
+    verify(notificationRepository, times(1)).save(notificationCaptor.capture());
 
-        Notification savedNotification = notificationCaptor.getValue();
-        assertEquals(user, savedNotification.getUser());
-        assertEquals(book, savedNotification.getBook());
-        assertEquals("BORROWED", savedNotification.getType());
-        assertEquals("Book Borrowed: You successfully borrowed 'Mockito for Beginners'.", savedNotification.getMessage());
-        assertEquals("FAILED", savedNotification.getStatus());
-    }
+    Notification savedNotification = notificationCaptor.getValue();
+    assertEquals(user, savedNotification.getUser());
+    assertEquals(book, savedNotification.getBook());
+    assertEquals("BORROWED", savedNotification.getType());
+    assertEquals(
+        "Book Borrowed: You successfully borrowed 'Mockito for Beginners'.",
+        savedNotification.getMessage());
+    assertEquals("FAILED", savedNotification.getStatus());
+  }
 }
