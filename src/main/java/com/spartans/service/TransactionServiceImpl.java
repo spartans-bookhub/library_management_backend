@@ -17,8 +17,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
 public class TransactionServiceImpl implements TransactionService {
@@ -250,5 +248,17 @@ public class TransactionServiceImpl implements TransactionService {
     public List<Book> getBooksWithLowStock(Integer threshold) {
         int actualThreshold = threshold != null ? threshold : libraryConfig.getLowStockThreshold();
         return bookRepository.findByAvailableCopiesLessThanEqual(actualThreshold);
+    }
+
+    public void setLibraryConfig(LibraryConfig libraryConfig) {
+        this.libraryConfig = libraryConfig;
+    }
+
+    public void setUserRoleConfig(UserRoleConfig userRoleConfig) {
+        this.userRoleConfig = userRoleConfig;
+    }
+
+    public void setTransactionStatusConfig(TransactionStatusConfig transactionStatusConfig) {
+        this.transactionStatusConfig = transactionStatusConfig;
     }
 }

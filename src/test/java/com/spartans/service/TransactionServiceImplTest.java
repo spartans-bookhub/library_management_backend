@@ -7,62 +7,78 @@ import com.spartans.config.LibraryConfig;
 import com.spartans.config.TransactionStatusConfig;
 import com.spartans.config.UserRoleConfig;
 import com.spartans.exception.*;
-import com.spartans.model.Book;
-import com.spartans.model.Transaction;
-import com.spartans.model.User;
+import com.spartans.model.*;
 import com.spartans.repository.BookRepository;
 import com.spartans.repository.TransactionRepository;
 import com.spartans.repository.UserRepository;
-import java.time.LocalDate;
+
 import java.util.*;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
 
-class TransactionServiceTest {
+class TransactionServiceImplTest {
 
-    @InjectMocks private TransactionServiceImpl transactionService;
+    @InjectMocks
+    private TransactionServiceImpl transactionService;
 
     @Mock private BookRepository bookRepository;
     @Mock private TransactionRepository transactionRepository;
     @Mock private UserRepository userRepository;
     @Mock private NotificationService notificationService;
-    @Mock private LibraryConfig libraryConfig;
-    @Mock private UserRoleConfig userRoleConfig;
-    @Mock private TransactionStatusConfig transactionStatusConfig;
+
+    // Real config instances
+    private LibraryConfig libraryConfig;
+    private UserRoleConfig userRoleConfig;
+    private TransactionStatusConfig transactionStatusConfig;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+
+        // LibraryConfig
+        libraryConfig = new LibraryConfig();
+        libraryConfig.setMaxBorrowLimit(3);
+        libraryConfig.setBorrowPeriodDays(7);
+        libraryConfig.setDailyFineRate(1.0);
+        libraryConfig.setLowStockThreshold(5);
+
+        // UserRoleConfig
+        userRoleConfig = new UserRoleConfig();
+        userRoleConfig.setStudent("STUDENT");
+        userRoleConfig.setAdmin("ADMIN");
+
+        // TransactionStatusConfig
+        transactionStatusConfig = new TransactionStatusConfig();
+        transactionStatusConfig.setBorrowed("BORROWED");
+        transactionStatusConfig.setReturned("RETURNED");
+        transactionStatusConfig.setDue("DUE");
+
+        // Inject configs into service
+        transactionService.setLibraryConfig(libraryConfig);
+        transactionService.setUserRoleConfig(userRoleConfig);
+        transactionService.setTransactionStatusConfig(transactionStatusConfig);
     }
 
     // ------------------- borrowBook Tests -------------------
+
     @Test
     void borrowBookSuccessful() {
         Long userId = 1L, bookId = 1L;
 
-        User user = new User();
-        user.setUserId(userId);
-        user.setUserRole("STUDENT");
+        User user = createUser(userId, "STUDENT");
 
         Book book = new Book();
         book.setBookId(bookId);
         book.setAvailableCopies(5);
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(userRoleConfig.getStudent()).thenReturn("STUDENT");
         when(bookRepository.findById(bookId)).thenReturn(Optional.of(book));
-        when(transactionStatusConfig.getBorrowed()).thenReturn("BORROWED");
         when(transactionRepository.findByUserAndBookAndTransactionStatus(user, book, "BORROWED"))
                 .thenReturn(Optional.empty());
-        when(libraryConfig.getMaxBorrowLimit()).thenReturn(3);
         when(transactionRepository.countByUserAndTransactionStatus(user, "BORROWED")).thenReturn(1L);
-        when(libraryConfig.getBorrowPeriodDays()).thenReturn(7);
-
-        Transaction transaction = new Transaction();
-        transaction.setUser(user);
-        transaction.setBook(book);
-        when(transactionRepository.save(any(Transaction.class))).thenReturn(transaction);
+        when(transactionRepository.save(any(Transaction.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Transaction result = transactionService.borrowBook(userId, bookId);
 
@@ -79,52 +95,34 @@ class TransactionServiceTest {
 
     @Test
     void borrowBookNonStudentUserThrowsException() {
-        User user = new User();
-        user.setUserId(1L);
-        user.setUserRole("ADMIN");
-
+        User user = createUser(1L, "ADMIN");
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(userRoleConfig.getStudent()).thenReturn("STUDENT");
-
         assertThrows(InvalidOperationException.class, () -> transactionService.borrowBook(1L, 1L));
     }
 
     @Test
     void borrowBookNotFoundThrowsException() {
-        User user = new User();
-        user.setUserId(1L);
-        user.setUserRole("STUDENT");
-
+        User user = createUser(1L, "STUDENT");
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(userRoleConfig.getStudent()).thenReturn("STUDENT");
         when(bookRepository.findById(1L)).thenReturn(Optional.empty());
-
         assertThrows(ResourceNotFoundException.class, () -> transactionService.borrowBook(1L, 1L));
     }
 
     @Test
     void borrowBookBookNotAvailableThrowsException() {
-        User user = new User();
-        user.setUserId(1L);
-        user.setUserRole("STUDENT");
-
+        User user = createUser(1L, "STUDENT");
         Book book = new Book();
         book.setBookId(1L);
         book.setAvailableCopies(0);
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(userRoleConfig.getStudent()).thenReturn("STUDENT");
         when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
-
         assertThrows(BookNotAvailableException.class, () -> transactionService.borrowBook(1L, 1L));
     }
 
     @Test
     void borrowBookAlreadyBorrowedThrowsException() {
-        User user = new User();
-        user.setUserId(1L);
-        user.setUserRole("STUDENT");
-
+        User user = createUser(1L, "STUDENT");
         Book book = new Book();
         book.setBookId(1L);
         book.setAvailableCopies(5);
@@ -133,9 +131,7 @@ class TransactionServiceTest {
         existingTransaction.setTransactionStatus("BORROWED");
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(userRoleConfig.getStudent()).thenReturn("STUDENT");
         when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
-        when(transactionStatusConfig.getBorrowed()).thenReturn("BORROWED");
         when(transactionRepository.findByUserAndBookAndTransactionStatus(user, book, "BORROWED"))
                 .thenReturn(Optional.of(existingTransaction));
 
@@ -144,37 +140,30 @@ class TransactionServiceTest {
 
     @Test
     void borrowBookExceedsBorrowLimitThrowsException() {
-        User user = new User();
-        user.setUserId(1L);
-        user.setUserRole("STUDENT");
-
+        User user = createUser(1L, "STUDENT");
         Book book = new Book();
         book.setBookId(1L);
         book.setAvailableCopies(5);
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(userRoleConfig.getStudent()).thenReturn("STUDENT");
         when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
-        when(transactionStatusConfig.getBorrowed()).thenReturn("BORROWED");
         when(transactionRepository.findByUserAndBookAndTransactionStatus(user, book, "BORROWED"))
                 .thenReturn(Optional.empty());
-        when(libraryConfig.getMaxBorrowLimit()).thenReturn(3);
         when(transactionRepository.countByUserAndTransactionStatus(user, "BORROWED")).thenReturn(3L);
 
         assertThrows(BorrowLimitExceededException.class, () -> transactionService.borrowBook(1L, 1L));
     }
 
-    // ------------------- returnBook Tests--------------
+    // ------------------- returnBook Tests -------------------
+
     @Test
     void returnBookTransactionNotFoundThrowsException() {
-        User user = new User();
-        user.setUserId(1L);
+        User user = createUser(1L, "STUDENT");
         Book book = new Book();
         book.setBookId(1L);
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
-        when(transactionStatusConfig.getBorrowed()).thenReturn("BORROWED");
         when(transactionRepository.findByUserAndBookAndTransactionStatus(user, book, "BORROWED"))
                 .thenReturn(Optional.empty());
 
@@ -189,14 +178,13 @@ class TransactionServiceTest {
 
     @Test
     void returnBookNotFoundThrowsException() {
-        User user = new User();
-        user.setUserId(1L);
+        User user = createUser(1L, "STUDENT");
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(bookRepository.findById(1L)).thenReturn(Optional.empty());
-
         assertThrows(ResourceNotFoundException.class, () -> transactionService.returnBook(1L, 1L));
     }
 
+    // ------------------- Utility Methods Tests -------------------
 
     @Test
     void getBorrowedBooksUserNotFoundThrowsException() {
@@ -204,13 +192,11 @@ class TransactionServiceTest {
         assertThrows(ResourceNotFoundException.class, () -> transactionService.getBorrowedBooks(1L));
     }
 
-
     @Test
     void getOverdueBooksUserNotFoundThrowsException() {
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
         assertThrows(ResourceNotFoundException.class, () -> transactionService.getOverdueBooks(1L));
     }
-
 
     @Test
     void getBorrowingHistoryUserNotFoundThrowsException() {
@@ -234,5 +220,16 @@ class TransactionServiceTest {
     void updateBookAvailabilityBookNotFoundThrowsException() {
         when(bookRepository.findById(1L)).thenReturn(Optional.empty());
         assertThrows(ResourceNotFoundException.class, () -> transactionService.updateBookAvailability(1L, "YES"));
+    }
+
+    // ------------------- Helper Method -------------------
+
+    private User createUser(Long id, String role) {
+        User user = new User();
+        user.setUserId(id);
+        UserAuth userAuth = new UserAuth();
+        userAuth.setRole(role);
+        user.setUserAuth(userAuth);
+        return user;
     }
 }
