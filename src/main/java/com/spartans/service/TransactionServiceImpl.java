@@ -266,8 +266,19 @@ public class TransactionServiceImpl implements TransactionService {
     return bookRepository.findByAvailableCopiesLessThanEqual(actualThreshold);
   }
 
+  public void setLibraryConfig(LibraryConfig libraryConfig) {
+    this.libraryConfig = libraryConfig;
+  }
+
+  public void setUserRoleConfig(UserRoleConfig userRoleConfig) {
+    this.userRoleConfig = userRoleConfig;
+  }
+
+  public void setTransactionStatusConfig(TransactionStatusConfig transactionStatusConfig) {
+    this.transactionStatusConfig = transactionStatusConfig;
+  }
+
   private BorrowedBookDTO toDTO(Transaction t) {
-    // Only include minimal info to avoid full User or Book objects
     return new BorrowedBookDTO(
         t.getTransactionId(),
         t.getBook().getBookId(),
