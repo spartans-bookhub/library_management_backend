@@ -34,6 +34,8 @@ public interface TransactionService {
   // --Admin methods--
   List<Transaction> getAllBorrowingHistory();
 
+  List<Transaction> getBorrowingHistoryByUserId(Long userId);
+
   Book updateBookInventory(Long bookId, Integer quantityChange);
 
   // Get all transactions

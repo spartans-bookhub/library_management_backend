@@ -189,6 +189,16 @@ public class TransactionServiceImpl implements TransactionService {
         return transactionRepository.findAll();
     }
 
+    @Override
+    public List<Transaction> getBorrowingHistoryByUserId(Long userId) {
+        User user =
+                userRepository
+                        .findById(userId)
+                        .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+
+        return transactionRepository.findByUser(user);
+    }
+
   @Override
   public boolean canBorrowMoreBooks(Long userId) {
     User user =
