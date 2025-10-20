@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-public record PasswordRequestDto(
+public record PasswordRequestDTO(
     @NotBlank String oldPassword,
     @NotBlank
         @Size(min = 6, message = "Password must be at least 6 characters")

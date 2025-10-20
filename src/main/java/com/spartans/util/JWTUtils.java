@@ -1,9 +1,10 @@
 package com.spartans.util;
 
 import com.spartans.config.JWTConfig;
-import com.spartans.exception.TokenValidationException;
 import com.spartans.model.UserAuth;
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
@@ -41,7 +42,6 @@ public class JWTUtils {
   }
 
   public void validateToken(String token) {
-    try {
       Jws<Claims> jws =
           Jwts.parser()
               .verifyWith(getSigningKey())
@@ -49,21 +49,14 @@ public class JWTUtils {
               .build()
               .parseSignedClaims(token);
       addClaimsInContext(jws.getPayload());
-    } catch (ExpiredJwtException ex) {
-      throw new TokenValidationException("User is logged out. Login Again");
-    } catch (SignatureException
-        | UnsupportedJwtException
-        | MalformedJwtException
-        | IllegalArgumentException e) {
-      throw new TokenValidationException(e.getMessage());
-    }
+
   }
 
   public void addClaimsInContext(Claims claims) {
     Map<String, Object> userClaims = new HashMap<>();
     Map<String, Object> userMap = (HashMap<String, Object>) claims.get("user");
     userClaims.put("role", userMap.get("role"));
-    userClaims.put("id", (Long) userMap.get("id"));
+    userClaims.put("id", ((Number) userMap.get("id")).longValue());
     userClaims.put("email", userMap.get("email"));
     UserContext.setUser(userClaims);
   }
