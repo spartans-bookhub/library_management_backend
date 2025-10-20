@@ -13,6 +13,8 @@ import com.spartans.repository.UserRepository;
 import com.spartans.util.UserContext;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
@@ -48,14 +50,25 @@ public class UserServiceTest {
           "9099999990",
           "456, main street, HR-6788",
           userAuth);
-  User savedUser =
+  User user2 =
       new User(
           Long.valueOf(10),
-          "John",
+          "Ben",
           LocalDateTime.now(),
-          "9099999990",
-          "456, main street, HR-6788",
+          "909333990",
+          "45446, main street, HR-6788",
           userAuth);
+
+  User user3 =
+      new User(
+          Long.valueOf(10),
+          "Paul",
+          LocalDateTime.now(),
+          "9095559990",
+          "555, main street, HR-67",
+          userAuth);
+  List<User> userList = List.of(user, user2, user3);
+
   UserResponseDTO userResponseDTO =
       new UserResponseDTO(
           "John", "john@test.com", "9099999990", "456, main street, HR-6788", "STUDENT");
@@ -120,5 +133,61 @@ public class UserServiceTest {
     assertThatThrownBy(() -> userService.editUser(userRequestDTO, Long.valueOf(10)))
         .isInstanceOf(UserNotFoundException.class)
         .hasMessageContaining("Incorrect user. This user doesn't exist");
+  }
+
+  // public List<UserResponseDTO> getAllUsers()
+  @Test
+  void testGetAllUser() {
+    UserResponseDTO responseDto1 =
+        new UserResponseDTO(
+            "John", "john@test.com", "9099999990", "456, main street, HR-6788", "STUDENT");
+    UserResponseDTO responseDto2 =
+        new UserResponseDTO(
+            "Ben", "john@test.com", "909333990", "45446, main street, HR-6788", "STUDENT");
+    UserResponseDTO responseDto3 =
+        new UserResponseDTO(
+            "Paul", "john@test.com", "9095559990", "555, main street, HR-67", "STUDENT");
+    Mockito.when(userRepo.findAll()).thenReturn(userList);
+    Mockito.when(mapper.toUserDto(user)).thenReturn(responseDto1);
+    Mockito.when(mapper.toUserDto(user2)).thenReturn(responseDto2);
+    Mockito.when(mapper.toUserDto(user3)).thenReturn(responseDto3);
+    List<UserResponseDTO> usersDto = userService.getAllUsers();
+
+    assertThat(usersDto).isNotNull();
+    assertThat(usersDto)
+        .extracting("userName", "email", "contactNumber", "address", "role")
+        .containsExactly(
+            tuple("John", "john@test.com", "9099999990", "456, main street, HR-6788", "STUDENT"),
+            tuple("Ben", "john@test.com", "909333990", "45446, main street, HR-6788", "STUDENT"),
+            tuple("Paul", "john@test.com", "9095559990", "555, main street, HR-67", "STUDENT"));
+  }
+
+  // public List<UserResponseDTO> getAllUsers() - No User exists
+  @Test
+  void testGetAllUsersWhenNoUserExists() {
+    Mockito.when(userRepo.findAll()).thenReturn(Collections.emptyList());
+    List<UserResponseDTO> usersDto = userService.getAllUsers();
+    assertThat(usersDto).isEmpty();
+  }
+
+  // public boolean deleteUser(Long id)
+
+  @Test
+  void testDeleteUserSuccess() {
+    Mockito.when(userRepo.existsById(Long.valueOf(10))).thenReturn(true);
+    Mockito.doNothing().when(userRepo).deleteById(Long.valueOf(10));
+    boolean deleted = userService.deleteUser(Long.valueOf(10));
+    assertThat(deleted).isTrue();
+  }
+
+  // public boolean deleteUser(Long id) - user id doesn nto exists
+  @Test
+  void testDeleteUserFail() {
+    Mockito.when(userRepo.existsById(Long.valueOf(10))).thenReturn(false);
+    Mockito.doNothing().when(userRepo).deleteById(Long.valueOf(10));
+
+    assertThatThrownBy(() -> userService.deleteUser(Long.valueOf(10)))
+        .isInstanceOf(UserNotFoundException.class)
+        .hasMessageContaining("This user is not found");
   }
 }

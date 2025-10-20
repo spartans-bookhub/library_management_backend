@@ -20,8 +20,8 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
   }
 
-  @ExceptionHandler(InvalidOperationException.class)
-  public ResponseEntity<String> handleInvalidOperationException(InvalidOperationException ex) {
+  @ExceptionHandler({InvalidOperationException.class, IllegalArgumentException.class})
+  public ResponseEntity<String> handleInvalidOperationException(RuntimeException ex) {
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
   }
 
@@ -68,6 +68,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler({UserAlreadyExistException.class, DataIntegrityViolationException.class})
   public ResponseEntity<String> handleUserAlreadyExistsException(RuntimeException ex) {
+    ex.printStackTrace();
     return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
   }
 

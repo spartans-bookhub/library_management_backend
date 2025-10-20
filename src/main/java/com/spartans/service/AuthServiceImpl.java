@@ -71,10 +71,17 @@ public class AuthServiceImpl implements AuthService {
 
   @Override
   public boolean changePassword(PasswordRequestDTO request) {
+    // Check if user exists
     UserAuth userAuth =
         authRepo
             .findById(UserContext.getEmail())
             .orElseThrow(() -> new UserNotFoundException("This user is not registered"));
+
+    // Check if passwords match
+    if (!request.newPassword().equals(request.confirmNewPassword()))
+      throw new IllegalArgumentException("New passwords do not match");
+
+    // Check if old password is correct
     if (validatePassword(request.oldPassword(), userAuth.getPassword())) {
       userAuth.setPassword(passwordEncoder.encode(request.newPassword()));
       authRepo.save(userAuth);
