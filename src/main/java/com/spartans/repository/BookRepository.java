@@ -15,11 +15,12 @@ public interface BookRepository extends JpaRepository<Book, Long> {
   // Find books with low available copies
   List<Book> findByAvailableCopiesLessThanEqual(Integer availableCopies);
 
-  boolean existsByTitleIgnoreCase(String title);
+  // Check if a book with same title exists
+  boolean existsByBookTitleIgnoreCase(String bookTitle);
 
-  Optional<Book> findByTitleIgnoreCase(String bookTitle);
-
-  Optional<Book> findByIsbnIgnoreCase(String isbn);
-
+  // Find book by bookTitle
   Optional<Book> findByBookTitleIgnoreCase(String bookTitle);
+
+  // Find by ISBN
+  Optional<Book> findByIsbnIgnoreCase(String isbn);
 }

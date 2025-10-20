@@ -1,10 +1,14 @@
 package com.spartans.controller;
 
+import com.spartans.dto.BorrowBooksRequest;
+import com.spartans.dto.BorrowBooksResponse;
+import com.spartans.dto.BorrowedBookDTO;
 import com.spartans.model.Book;
 import com.spartans.model.Transaction;
 import com.spartans.service.TransactionService;
 import com.spartans.util.UserContext;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,40 +20,60 @@ public class TransactionController {
 
   @Autowired private TransactionService transactionService;
 
-  // Borrow a book
+  // Borrow a single book
   @PostMapping("/book/{bookId}/borrow")
-  public ResponseEntity<Transaction> borrowBook(
+  public ResponseEntity<BorrowedBookDTO> borrowBook(
       @PathVariable Long bookId, HttpServletRequest request) {
     Transaction transaction = transactionService.borrowBook(UserContext.getUserId(), bookId);
-    return ResponseEntity.ok(transaction);
+    BorrowedBookDTO transactionDTO = mapToDTO(transaction);
+    return ResponseEntity.ok(transactionDTO);
+  }
+
+  // Borrow multiple books
+  @PostMapping("/books/borrow")
+  public ResponseEntity<BorrowBooksResponse> borrowMultipleBooks(
+      @Valid @RequestBody BorrowBooksRequest request, HttpServletRequest httpRequest) {
+    Long userId = UserContext.getUserId();
+    BorrowBooksResponse response =
+        transactionService.borrowMultipleBooks(userId, request.getBookIds());
+    return ResponseEntity.ok(response);
   }
 
   // Return a book
   @PostMapping("/book/{bookId}/return")
-  public ResponseEntity<Transaction> returnBook(
+  public ResponseEntity<BorrowedBookDTO> returnBook(
       @PathVariable Long bookId, HttpServletRequest request) {
-    Transaction transaction = transactionService.returnBook(UserContext.getUserId(), bookId);
-    return ResponseEntity.ok(transaction);
+    BorrowedBookDTO returnedDTO = transactionService.returnBook(UserContext.getUserId(), bookId);
+    return ResponseEntity.ok(returnedDTO);
   }
 
   // Get all borrowed books for the logged-in student
   @GetMapping("/borrowed")
-  public ResponseEntity<List<Transaction>> getBorrowedBooks(HttpServletRequest request) {
-    List<Transaction> borrowedBooks = transactionService.getBorrowedBooks(UserContext.getUserId());
+  public ResponseEntity<List<BorrowedBookDTO>> getBorrowedBooks(HttpServletRequest request) {
+    List<BorrowedBookDTO> borrowedBooks =
+        transactionService.getBorrowedBooks(UserContext.getUserId()).stream()
+            .map(this::mapToDTO)
+            .toList();
     return ResponseEntity.ok(borrowedBooks);
   }
 
-  // Get overdue books
+  // Get overdue books for the logged-in student
   @GetMapping("/overdue")
-  public ResponseEntity<List<Transaction>> getOverdueBooks(HttpServletRequest request) {
-    List<Transaction> overdueBooks = transactionService.getOverdueBooks(UserContext.getUserId());
+  public ResponseEntity<List<BorrowedBookDTO>> getOverdueBooks(HttpServletRequest request) {
+    List<BorrowedBookDTO> overdueBooks =
+        transactionService.getOverdueBooks(UserContext.getUserId()).stream()
+            .map(this::mapToDTO)
+            .toList();
     return ResponseEntity.ok(overdueBooks);
   }
 
-  // Get borrowing history
+  // Get borrowing history for the logged-in student
   @GetMapping("/history")
-  public ResponseEntity<List<Transaction>> getBorrowingHistory(HttpServletRequest request) {
-    List<Transaction> history = transactionService.getBorrowingHistory(UserContext.getUserId());
+  public ResponseEntity<List<BorrowedBookDTO>> getBorrowingHistory(HttpServletRequest request) {
+    List<BorrowedBookDTO> history =
+        transactionService.getBorrowingHistory(UserContext.getUserId()).stream()
+            .map(this::mapToDTO)
+            .toList();
     return ResponseEntity.ok(history);
   }
 
@@ -60,28 +84,31 @@ public class TransactionController {
     return ResponseEntity.ok(canBorrow);
   }
 
-  // Get all transactions (Admin-only)
+  // Admin-only: get all transactions
   @GetMapping
-  public ResponseEntity<List<Transaction>> getAllTransactions() {
-    List<Transaction> transactions = transactionService.getAllTransactions();
+  public ResponseEntity<List<BorrowedBookDTO>> getAllTransactions() {
+    List<BorrowedBookDTO> transactions =
+        transactionService.getAllTransactions().stream().map(this::mapToDTO).toList();
     return ResponseEntity.ok(transactions);
   }
 
-  // Get transactions by status (Admin-only)
+  // Admin-only: get transactions by status
   @GetMapping("/status/{status}")
-  public ResponseEntity<List<Transaction>> getTransactionsByStatus(@PathVariable String status) {
-    List<Transaction> transactions = transactionService.getTransactionsByStatus(status);
+  public ResponseEntity<List<BorrowedBookDTO>> getTransactionsByStatus(
+      @PathVariable String status) {
+    List<BorrowedBookDTO> transactions =
+        transactionService.getTransactionsByStatus(status).stream().map(this::mapToDTO).toList();
     return ResponseEntity.ok(transactions);
   }
 
-  // Get overdue transactions (Admin-only)
+  // Admin-only: get overdue transactions
   @GetMapping("/overdue/all")
-  public ResponseEntity<List<Transaction>> getOverdueTransactions() {
-    List<Transaction> overdueTransactions = transactionService.getOverdueTransactions();
+  public ResponseEntity<List<BorrowedBookDTO>> getOverdueTransactions() {
+    List<BorrowedBookDTO> overdueTransactions =
+        transactionService.getOverdueTransactions().stream().map(this::mapToDTO).toList();
     return ResponseEntity.ok(overdueTransactions);
   }
 
-  // TODO: move to book controller
   // Get available books
   @GetMapping("/books/available")
   public ResponseEntity<List<Book>> getAvailableBooks() {
@@ -120,14 +147,16 @@ public class TransactionController {
     return ResponseEntity.ok(lowStockBooks);
   }
 
-  //
-  //    @PostMapping("/book/{bookId}/borrow")
-  //    public ResponseEntity<Transaction> borrowBook(@PathVariable Long bookId, HttpServletRequest
-  // request) {
-  //        String token = extractToken(request);
-  //        Long userId = jwtUtils.getUserId(token);
-  //        Transaction transaction = transactionService.borrowBook(userId, bookId);
-  //        return ResponseEntity.ok(transaction);
-  //    }
-
+  // Helper method to convert Transaction to BorrowedBookDTO
+  private BorrowedBookDTO mapToDTO(Transaction transaction) {
+    return new BorrowedBookDTO(
+        transaction.getTransactionId(),
+        transaction.getBook().getBookId(),
+        transaction.getBook().getBookTitle(),
+        transaction.getUser().getUserId(),
+        transaction.getBorrowDate(),
+        transaction.getDueDate(),
+        transaction.getReturnDate(),
+        transaction.getFineAmount());
+  }
 }
