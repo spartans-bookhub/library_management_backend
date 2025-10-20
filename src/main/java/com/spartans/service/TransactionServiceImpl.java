@@ -184,6 +184,11 @@ public class TransactionServiceImpl implements TransactionService {
     return transactionRepository.findByUser(user);
   }
 
+    @Override
+    public List<Transaction> getAllBorrowingHistory() {
+        return transactionRepository.findAll();
+    }
+
   @Override
   public boolean canBorrowMoreBooks(Long userId) {
     User user =
