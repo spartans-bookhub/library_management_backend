@@ -2,7 +2,6 @@ package com.spartans.controller;
 
 import com.spartans.dto.*;
 import com.spartans.service.AuthService;
-import com.spartans.util.JWTUtils;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,12 +14,10 @@ public class AuthController {
 
   @Autowired AuthService authService;
 
-  @Autowired private JWTUtils jwtUtils;
-
   @PostMapping("/register")
   public ResponseEntity<?> register(@Valid @RequestBody RegisterRequestDTO registerRequest) {
     authService.register(registerRequest);
-    return ResponseEntity.status(HttpStatus.CREATED).build();
+    return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully");
   }
 
   @PostMapping("/login")
@@ -32,6 +29,6 @@ public class AuthController {
   @PostMapping("/api/password")
   public ResponseEntity<?> changePassword(@Valid @RequestBody PasswordRequestDTO passwordReqDto) {
     authService.changePassword(passwordReqDto);
-    return ResponseEntity.ok().build();
+    return ResponseEntity.ok().body("Password changed successfully");
   }
 }
