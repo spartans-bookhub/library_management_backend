@@ -7,5 +7,5 @@ public interface AuthService {
 
   public LoginResponseDTO login(LoginRequestDTO request);
 
-  public boolean changePassword(PasswordRequestDto request);
+  public boolean changePassword(PasswordRequestDTO request);
 }

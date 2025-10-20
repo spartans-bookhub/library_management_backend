@@ -3,7 +3,6 @@ package com.spartans.filter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spartans.config.JWTConfig;
 import com.spartans.dto.ErrorResponseDTO;
-import com.spartans.exception.TokenValidationException;
 import com.spartans.util.JWTUtils;
 import com.spartans.util.UserContext;
 import io.jsonwebtoken.*;
@@ -27,7 +26,6 @@ public class JWTFilter extends GenericFilter {
       ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
       throws IOException, ServletException {
     try {
-
       HttpServletRequest httpRequest = (HttpServletRequest) servletRequest;
       HttpServletResponse httpResponse = (HttpServletResponse) servletResponse;
       httpResponse.setHeader("Access-Control-Allow-Origin", "*");
@@ -40,17 +38,23 @@ public class JWTFilter extends GenericFilter {
       } else {
         String authHeader = httpRequest.getHeader("Authorization");
         if ((authHeader == null) || (!authHeader.startsWith("Bearer"))) {
-          sendUnauthorizedResponse(
-              httpResponse, "JWT Token is missing", httpRequest.getRequestURI());
+          sendJwtErrorResponse(httpResponse, "JWT Token is missing", httpRequest.getRequestURI());
           return;
         }
 
         String token = authHeader.substring(7);
         try {
           jwtUtil.validateToken(token);
-        } catch (TokenValidationException ex) {
-          sendUnauthorizedResponse(
-              httpResponse, "JWT Token has expired", httpRequest.getRequestURI());
+        } catch (ExpiredJwtException ex) {
+          sendJwtErrorResponse(
+              httpResponse, "User is logged out. Login Again", httpRequest.getRequestURI());
+          return;
+        } catch (SignatureException
+            | UnsupportedJwtException
+            | MalformedJwtException
+            | IllegalArgumentException e) {
+          sendJwtErrorResponse(
+              httpResponse, "JWT is tampered or corrupt", httpRequest.getRequestURI());
           return;
         }
       }
@@ -60,17 +64,18 @@ public class JWTFilter extends GenericFilter {
     }
   }
 
-  private void sendUnauthorizedResponse(
-      HttpServletResponse httpResponse, String message, String path) throws IOException {
+  private void sendJwtErrorResponse(HttpServletResponse httpResponse, String message, String path)
+      throws IOException {
     if (!httpResponse.isCommitted()) {
       httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       httpResponse.setContentType("application/json");
 
       ErrorResponseDTO errorResponse =
-          new ErrorResponseDTO(HttpServletResponse.SC_UNAUTHORIZED, message, path);
+          new ErrorResponseDTO(message, HttpServletResponse.SC_UNAUTHORIZED, path);
 
       ObjectMapper mapper = new ObjectMapper();
       httpResponse.getWriter().write(mapper.writeValueAsString(errorResponse));
+      httpResponse.getWriter().flush();
     }
   }
 }

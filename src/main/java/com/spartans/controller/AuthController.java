@@ -30,7 +30,7 @@ public class AuthController {
   }
 
   @PostMapping("/api/password")
-  public ResponseEntity<?> changePassword(@Valid @RequestBody PasswordRequestDto passwordReqDto) {
+  public ResponseEntity<?> changePassword(@Valid @RequestBody PasswordRequestDTO passwordReqDto) {
     authService.changePassword(passwordReqDto);
     return ResponseEntity.ok().build();
   }
