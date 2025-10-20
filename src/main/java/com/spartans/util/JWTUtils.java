@@ -28,7 +28,6 @@ public class JWTUtils {
     if (userAuth.getRole().equalsIgnoreCase("STUDENT")) {
       userData.put("id", userAuth.getStudent().getUserId());
     }
-    System.out.println("generateToken==" + userAuth.getRole());
     userData.put("email", userAuth.getEmail());
     userData.put("role", userAuth.getRole());
     return Jwts.builder()
@@ -42,14 +41,13 @@ public class JWTUtils {
   }
 
   public void validateToken(String token) {
-      Jws<Claims> jws =
-          Jwts.parser()
-              .verifyWith(getSigningKey())
-              .requireIssuer("book-nest")
-              .build()
-              .parseSignedClaims(token);
-      addClaimsInContext(jws.getPayload());
-
+    Jws<Claims> jws =
+        Jwts.parser()
+            .verifyWith(getSigningKey())
+            .requireIssuer("book-nest")
+            .build()
+            .parseSignedClaims(token);
+    addClaimsInContext(jws.getPayload());
   }
 
   public void addClaimsInContext(Claims claims) {

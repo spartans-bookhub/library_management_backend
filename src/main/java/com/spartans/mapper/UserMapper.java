@@ -2,8 +2,8 @@ package com.spartans.mapper;
 
 import com.spartans.dto.LoginResponseDTO;
 import com.spartans.dto.RegisterRequestDTO;
-import com.spartans.dto.UserResponseDTO;
 import com.spartans.dto.UserRequestDTO;
+import com.spartans.dto.UserResponseDTO;
 import com.spartans.model.User;
 import com.spartans.model.UserAuth;
 import org.mapstruct.Mapper;
