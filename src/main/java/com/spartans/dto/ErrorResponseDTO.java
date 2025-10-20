@@ -3,13 +3,13 @@ package com.spartans.dto;
 public class ErrorResponseDTO {
   private String message;
   private int status;
+  private String path;
 
-  public ErrorResponseDTO(String message, int status) {
+  public ErrorResponseDTO(String message, int status, String path) {
     this.message = message;
     this.status = status;
+    this.path = path;
   }
-
-  public ErrorResponseDTO(int status, String message, String requestURI) {}
 
   // Getters and setters
   public String getMessage() {
@@ -26,5 +26,13 @@ public class ErrorResponseDTO {
 
   public void setStatus(int status) {
     this.status = status;
+  }
+
+  public String getPath() {
+    return path;
+  }
+
+  public void setPath(String path) {
+    this.path = path;
   }
 }

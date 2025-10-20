@@ -2,8 +2,10 @@ package com.spartans.exception;
 
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureException;
+import java.nio.file.AccessDeniedException;
 import java.util.HashMap;
 import java.util.Map;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -64,8 +66,8 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid JWT token.");
   }
 
-  @ExceptionHandler({UserAlreadyExistException.class})
-  public ResponseEntity<String> handleUserNotFoundException(UserAlreadyExistException ex) {
+  @ExceptionHandler({UserAlreadyExistException.class, DataIntegrityViolationException.class})
+  public ResponseEntity<String> handleUserAlreadyExistsException(RuntimeException ex) {
     return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
   }
 
@@ -77,5 +79,10 @@ public class GlobalExceptionHandler {
   @ExceptionHandler({InvalidLoginException.class, TokenValidationException.class})
   public ResponseEntity<String> handleInvalidLoginAndTokenException(RuntimeException ex) {
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
+  }
+
+  @ExceptionHandler(AccessDeniedException.class)
+  public ResponseEntity<?> handleAccessDeniedException(AccessDeniedException ex) {
+    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
   }
 }

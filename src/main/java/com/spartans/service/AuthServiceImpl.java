@@ -70,7 +70,7 @@ public class AuthServiceImpl implements AuthService {
   }
 
   @Override
-  public boolean changePassword(PasswordRequestDto request) {
+  public boolean changePassword(PasswordRequestDTO request) {
     UserAuth userAuth =
         authRepo
             .findById(UserContext.getEmail())
