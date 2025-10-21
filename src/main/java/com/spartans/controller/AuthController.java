@@ -27,8 +27,8 @@ public class AuthController {
   }
 
   @PostMapping("/api/password")
-  public ResponseEntity<?> changePassword(@Valid @RequestBody PasswordRequestDTO passwordReqDto) {
-    authService.changePassword(passwordReqDto);
+  public ResponseEntity<?> changePassword(@Valid @RequestBody PasswordRequestDTO passwordRequest) {
+    authService.changePassword(passwordRequest);
     return ResponseEntity.ok().body("Password changed successfully");
   }
 }
