@@ -8,7 +8,9 @@ import com.spartans.model.Book;
 import com.spartans.repository.BookRepository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,6 +41,7 @@ class BookServiceImplTest {
     book.setAvailableCopies(10);
     book.setCreatedAt(LocalDateTime.now());
     book.setPublicationDate(LocalDate.now());
+    book.setAvailable(true);
   }
 
   //  Test addBook success
@@ -158,4 +161,41 @@ class BookServiceImplTest {
 
     assertThrows(BookNotFoundException.class, () -> bookService.getBookDetails("Unknown Book"));
   }
+
+
+    @Test
+    void testSearchBookByTitle_Positive() {
+        when(bookRepository.findByBookTitle("Java Basics")).thenReturn(Collections.singletonList(book));
+
+        Map<String, Object> result = bookService.searchBook("Java Basics");
+
+        assertTrue(result.containsKey("books"));
+        List<Map<String, Object>> books = (List<Map<String, Object>>) result.get("books");
+        assertEquals(1, books.size());
+        assertEquals("Effective Java", books.get(0).get("Title"));
+    }
+
+    @Test
+    void testSearchBookByAuthor_Positive() {
+        when(bookRepository.findByBookTitle("John Doe")).thenReturn(Collections.emptyList());
+        when(bookRepository.findByBookAuthor("John Doe")).thenReturn(Collections.singletonList(book));
+
+        Map<String, Object> result = bookService.searchBook("John Doe");
+
+        assertTrue(result.containsKey("books"));
+    }
+
+    @Test
+    void testSearchBook_NotFound_Negative() {
+        when(bookRepository.findByBookTitle("Unknown")).thenReturn(Collections.emptyList());
+        when(bookRepository.findByBookAuthor("Unknown")).thenReturn(Collections.emptyList());
+        when(bookRepository.findByIsbn("Unknown")).thenReturn(Collections.emptyList());
+        when(bookRepository.findByCategory("Unknown")).thenReturn(Collections.emptyList());
+
+        Map<String, Object> result = bookService.searchBook("Unknown");
+
+        assertTrue(result.containsKey("message"));
+        assertEquals("Book not found for keyword: Unknown", result.get("message"));
+    }
+
 }

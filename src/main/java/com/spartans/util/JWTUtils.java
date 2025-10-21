@@ -68,7 +68,8 @@ public class JWTUtils {
         Map<String, Object> userClaims = new HashMap<>();
         Map<String, Object> userMap = (HashMap<String, Object>) claims.get("user");
         userClaims.put("role", userMap.get("role"));
-        userClaims.put("id", (Long)userMap.get("id"));
+
+        userClaims.put("id", ((Number) userMap.get("id")).longValue());
         userClaims.put("email", userMap.get("email"));
         UserContext.setUser(userClaims);
     }
