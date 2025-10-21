@@ -11,4 +11,6 @@ public interface NotificationService {
   void sendLateReturnNotification(User user, Book book, Long daysLate, double fine);
 
   void sendDueDateReminder(User user, Book book, Long daysLeft);
+
+  void sendPasswordResetReminder(String email, String resetToken);
 }

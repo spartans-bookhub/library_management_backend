@@ -19,8 +19,8 @@ public record RegisterRequestDTO(
 
     // user details
     @NotBlank(message = "Name is required.")
-    @Pattern(regexp = ".*[a-zA-Z]+.*", message = "Name must contain letters.")
-    String name,
+        @Pattern(regexp = ".*[a-zA-Z]+.*", message = "Name must contain letters.")
+        String name,
     @Pattern(regexp = "^(?:\\+91|91)?[789]\\d{9}$", message = "Invalid mobile number")
         String contactNumber,
     String address) {}

@@ -8,7 +8,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-
 @RestController
 @RequestMapping("/")
 public class AuthController {
@@ -31,5 +30,17 @@ public class AuthController {
   public ResponseEntity<?> changePassword(@Valid @RequestBody PasswordRequestDTO passwordRequest) {
     authService.changePassword(passwordRequest);
     return ResponseEntity.ok().body("Password changed successfully");
+  }
+
+  @PostMapping("/forgot-password")
+  public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordDTO passwordRequest) {
+    authService.processForgotPassword(passwordRequest);
+    return ResponseEntity.ok().build();
+  }
+
+  @PostMapping("/password-reset")
+  public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordDTO passwordRequest) {
+    authService.resetPassword(passwordRequest);
+    return ResponseEntity.ok().build();
   }
 }
