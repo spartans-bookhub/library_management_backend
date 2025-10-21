@@ -9,10 +9,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@CrossOrigin
 @RequestMapping("/")
 public class AuthController {
 
   @Autowired AuthService authService;
+
+    @GetMapping("/healthcheck")
+    public ResponseEntity<String> healthcheck() {
+        return ResponseEntity.ok("Backend is running");
+    }
 
   @PostMapping("/register")
   public ResponseEntity<?> register(@Valid @RequestBody RegisterRequestDTO registerRequest) {
