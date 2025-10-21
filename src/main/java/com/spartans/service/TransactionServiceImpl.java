@@ -3,252 +3,312 @@ package com.spartans.service;
 import com.spartans.config.LibraryConfig;
 import com.spartans.config.TransactionStatusConfig;
 import com.spartans.config.UserRoleConfig;
+import com.spartans.dto.BorrowBooksResponse;
+import com.spartans.dto.BorrowedBookDTO;
 import com.spartans.exception.*;
-import com.spartans.mapper.UserMapper;
 import com.spartans.model.Book;
 import com.spartans.model.Transaction;
 import com.spartans.model.User;
 import com.spartans.repository.BookRepository;
 import com.spartans.repository.TransactionRepository;
 import com.spartans.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
+import com.spartans.util.UserContext;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class TransactionServiceImpl implements TransactionService {
 
-    @Autowired
-    private BookRepository bookRepository;
+  @Autowired private BookRepository bookRepository;
 
-    @Autowired
-    private TransactionRepository transactionRepository;
+  @Autowired private TransactionRepository transactionRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+  @Autowired private UserRepository userRepository;
 
-    @Autowired
-    private NotificationService notificationService;
+  @Autowired private NotificationService notificationService;
 
-    @Autowired
-    private LibraryConfig libraryConfig;
+  @Autowired private LibraryConfig libraryConfig;
 
-    @Autowired
-    private UserRoleConfig userRoleConfig;
+  @Autowired private UserRoleConfig userRoleConfig;
 
-    @Autowired
-    private TransactionStatusConfig transactionStatusConfig;
+  @Autowired private TransactionStatusConfig transactionStatusConfig;
 
-    @Autowired
-    UserMapper mapper;
+  @Override
+  public Transaction borrowBook(Long userId, Long bookId) {
+    User user =
+        userRepository
+            .findById(userId)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
-    @Override
-    public Transaction borrowBook(Long userId, Long bookId) {
-        // Check if user exists and is a student
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
-
-        if (!userRoleConfig.getStudent().equals(user.getUserAuth().getRole())) {
-            throw new InvalidOperationException("Only students can borrow books");
-        }
-
-        // Check if book exists
-        Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new ResourceNotFoundException("Book not found with id: " + bookId));
-
-        // Check if book is available
-        if (!isBookAvailable(bookId)) {
-            throw new BookNotAvailableException("Book is not available for borrowing");
-        }
-
-        // Check if student has already borrowed this book
-        Optional<Transaction> existingBorrow = transactionRepository
-                .findByUserAndBookAndTransactionStatus(user, book, transactionStatusConfig.getBorrowed());
-        if (existingBorrow.isPresent()) {
-            throw new BookAlreadyBorrowedException("You have already borrowed this book");
-        }
-
-        // Check borrowing limit
-        if (!canBorrowMoreBooks(userId)) {
-            throw new BorrowLimitExceededException("You have reached the maximum borrowing limit of " + libraryConfig.getMaxBorrowLimit() + " books");
-        }
-
-        // Create transaction
-        Transaction transaction = new Transaction();
-        transaction.setUser(user);
-        transaction.setBook(book);
-        transaction.setBorrowDate(LocalDate.now());
-        transaction.setDueDate(LocalDate.now().plusDays(libraryConfig.getBorrowPeriodDays()));
-        transaction.setTransactionStatus(transactionStatusConfig.getBorrowed());
-        transaction.setFineAmount(0.0);
-
-        // Update available copies
-        book.setAvailableCopies(book.getAvailableCopies() - 1);
-        bookRepository.save(book);
-
-        // Save transaction
-        Transaction savedTransaction = transactionRepository.save(transaction);
-
-        // Send notification
-        notificationService.sendBookBorrowedNotification(user, book);
-
-        return savedTransaction;
+    if (!userRoleConfig.getStudent().equals(user.getUserAuth().getRole())) {
+      throw new InvalidOperationException("Only students can borrow books");
     }
 
-    @Override
-    public Transaction returnBook(Long userId, Long bookId) {
-        // Find the active transaction
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+    Book book =
+        bookRepository
+            .findById(bookId)
+            .orElseThrow(() -> new ResourceNotFoundException("Book not found with id: " + bookId));
 
-        Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new ResourceNotFoundException("Book not found with id: " + bookId));
-
-        Transaction transaction = transactionRepository
-                .findByUserAndBookAndTransactionStatus(user, book, transactionStatusConfig.getBorrowed())
-                .orElseThrow(() -> new ResourceNotFoundException("No active borrowing found for this book"));
-
-        // Update transaction
-        LocalDate returnDate = LocalDate.now();
-        transaction.setReturnDate(returnDate);
-        transaction.setTransactionStatus(transactionStatusConfig.getReturned());
-
-        // Calculate fine if late
-        if (returnDate.isAfter(transaction.getDueDate())) {
-            long daysLate = returnDate.toEpochDay() - transaction.getDueDate().toEpochDay();
-            double fine = daysLate * libraryConfig.getDailyFineRate();
-            transaction.setFineAmount(fine);
-            transaction.setPenaltyReason("Late return - " + daysLate + " days overdue");
-
-            // Send late return notification
-            notificationService.sendLateReturnNotification(user, book, daysLate, fine);
-        }
-
-        // Update available copies
-        book.setAvailableCopies(book.getAvailableCopies() + 1);
-        bookRepository.save(book);
-
-        // Save transaction
-        Transaction savedTransaction = transactionRepository.save(transaction);
-
-        // Send return notification
-        notificationService.sendBookReturnedNotification(user, book);
-
-        return savedTransaction;
+    if (!isBookAvailable(bookId)) {
+      throw new BookNotAvailableException("Book is not available for borrowing");
     }
 
-    @Override
-    public List<Transaction> getBorrowedBooks(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
-
-        return transactionRepository.findByUserAndTransactionStatus(user, transactionStatusConfig.getBorrowed());
+    if (transactionRepository
+        .findByUserAndBookAndTransactionStatus(user, book, transactionStatusConfig.getBorrowed())
+        .isPresent()) {
+      throw new BookAlreadyBorrowedException("You have already borrowed this book");
     }
 
-    @Override
-    public List<Transaction> getOverdueBooks(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
-
-        LocalDate today = LocalDate.now();
-        List<Transaction> borrowedBooks = transactionRepository.findByUserAndTransactionStatus(user, transactionStatusConfig.getBorrowed());
-
-        return borrowedBooks.stream()
-                .filter(transaction -> today.isAfter(transaction.getDueDate()))
-                .toList();
+    if (!canBorrowMoreBooks(userId)) {
+      throw new BorrowLimitExceededException(
+          "You have reached the maximum borrowing limit of "
+              + libraryConfig.getMaxBorrowLimit()
+              + " books");
     }
 
-    @Override
-    public List<Transaction> getBorrowingHistory(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+    Transaction transaction = new Transaction();
+    transaction.setUser(user);
+    transaction.setBook(book);
+    transaction.setBorrowDate(LocalDate.now());
+    transaction.setDueDate(LocalDate.now().plusDays(libraryConfig.getBorrowPeriodDays()));
+    transaction.setTransactionStatus(transactionStatusConfig.getBorrowed());
+    transaction.setFineAmount(0.0);
 
-        return transactionRepository.findByUser(user);
+    // Update available copies
+    book.setAvailableCopies(book.getAvailableCopies() - 1);
+    bookRepository.save(book);
+
+    Transaction savedTransaction = transactionRepository.save(transaction);
+
+    notificationService.sendBookBorrowedNotification(user, book);
+
+    return savedTransaction;
+  }
+
+  @Override
+  public BorrowBooksResponse borrowMultipleBooks(Long userId, List<Long> bookIds) {
+    List<BorrowedBookDTO> successList = new ArrayList<>();
+    Map<Long, String> failedList = new HashMap<>();
+
+    for (Long bookId : bookIds) {
+      try {
+        Transaction transaction = borrowBook(userId, bookId);
+        successList.add(toDTO(transaction)); // safe DTO mapping
+      } catch (BookNotAvailableException e) {
+        failedList.put(bookId, "Book is currently unavailable");
+      } catch (BorrowLimitExceededException e) {
+        failedList.put(bookId, "User has reached max borrow limit");
+      } catch (Exception e) {
+        failedList.put(bookId, "Unexpected error: " + e.getMessage());
+      }
     }
 
-    @Override
-    public boolean canBorrowMoreBooks(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+    return new BorrowBooksResponse(successList, failedList);
+  }
 
-        long currentBorrowedCount = transactionRepository.countByUserAndTransactionStatus(user, transactionStatusConfig.getBorrowed());
-        return currentBorrowedCount < libraryConfig.getMaxBorrowLimit();
+  @Override
+  public BorrowedBookDTO returnBook(Long userId, Long bookId) {
+    User user =
+        userRepository
+            .findById(userId)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+
+    Book book =
+        bookRepository
+            .findById(bookId)
+            .orElseThrow(() -> new ResourceNotFoundException("Book not found with id: " + bookId));
+
+    Transaction transaction =
+        transactionRepository
+            .findByUserAndBookAndTransactionStatus(
+                user, book, transactionStatusConfig.getBorrowed())
+            .orElseThrow(
+                () -> new ResourceNotFoundException("No active borrowing found for this book"));
+
+    LocalDate returnDate = LocalDate.now();
+    transaction.setReturnDate(returnDate);
+    transaction.setTransactionStatus(transactionStatusConfig.getReturned());
+
+    if (returnDate.isAfter(transaction.getDueDate())) {
+      long daysLate = returnDate.toEpochDay() - transaction.getDueDate().toEpochDay();
+      double fine = daysLate * libraryConfig.getDailyFineRate();
+      transaction.setFineAmount(fine);
+      transaction.setPenaltyReason("Late return - " + daysLate + " days overdue");
+      notificationService.sendLateReturnNotification(user, book, daysLate, fine);
     }
 
-    @Override
-    public List<Book> getAvailableBooks() {
-        return bookRepository.findByAvailableCopiesGreaterThan(0);
+    book.setAvailableCopies(book.getAvailableCopies() + 1);
+    bookRepository.save(book);
+
+    Transaction savedTransaction = transactionRepository.save(transaction);
+
+    notificationService.sendBookReturnedNotification(user, book);
+
+    return toDTO(savedTransaction);
+  }
+
+  @Override
+  public List<Transaction> getBorrowedBooks(Long userId) {
+    User user =
+        userRepository
+            .findById(userId)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+
+    return transactionRepository.findByUserAndTransactionStatus(
+        user, transactionStatusConfig.getBorrowed());
+  }
+
+  @Override
+  public List<Transaction> getOverdueBooks(Long userId) {
+    User user =
+        userRepository
+            .findById(userId)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+
+    LocalDate today = LocalDate.now();
+    return transactionRepository
+        .findByUserAndTransactionStatus(user, transactionStatusConfig.getBorrowed())
+        .stream()
+        .filter(transaction -> today.isAfter(transaction.getDueDate()))
+        .toList();
+  }
+
+  @Override
+  public List<Transaction> getBorrowingHistory(Long userId) {
+    String role = UserContext.getRole();
+
+    if ("ADMIN".equalsIgnoreCase(role)) {
+      return transactionRepository.findAll();
     }
 
-    @Override
-    public boolean isBookAvailable(Long bookId) {
-        Optional<Book> book = bookRepository.findById(bookId);
-        return book.isPresent() && book.get().getAvailableCopies() > 0;
+    User user =
+        userRepository
+            .findById(userId)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+
+    return transactionRepository.findByUser(user);
+  }
+
+  @Override
+  public List<Transaction> getAllBorrowingHistory() {
+    return transactionRepository.findAll();
+  }
+
+  @Override
+  public List<Transaction> getBorrowingHistoryByUserId(Long userId) {
+    User user =
+        userRepository
+            .findById(userId)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+
+    return transactionRepository.findByUser(user);
+  }
+
+  @Override
+  public boolean canBorrowMoreBooks(Long userId) {
+    User user =
+        userRepository
+            .findById(userId)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+    long currentBorrowedCount =
+        transactionRepository.countByUserAndTransactionStatus(
+            user, transactionStatusConfig.getBorrowed());
+    return currentBorrowedCount < libraryConfig.getMaxBorrowLimit();
+  }
+
+  @Override
+  public List<Book> getAvailableBooks() {
+    return bookRepository.findByAvailableCopiesGreaterThan(0);
+  }
+
+  @Override
+  public boolean isBookAvailable(Long bookId) {
+    return bookRepository.findById(bookId).map(book -> book.getAvailableCopies() > 0).orElse(false);
+  }
+
+  // Admin methods
+  @Override
+  public Book updateBookInventory(Long bookId, Integer quantityChange) {
+    Book book =
+        bookRepository
+            .findById(bookId)
+            .orElseThrow(() -> new ResourceNotFoundException("Book not found with id: " + bookId));
+
+    int newTotalCopies = book.getTotalCopies() + quantityChange;
+    book.setTotalCopies(newTotalCopies);
+
+    if (quantityChange > 0) {
+      book.setAvailableCopies(book.getAvailableCopies() + quantityChange);
     }
 
-    //---------Admin methods---------------
-    @Override
-    public Book updateBookInventory(Long bookId, Integer quantityChange) {
-        Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new ResourceNotFoundException("Book not found with id: " + bookId));
+    return bookRepository.save(book);
+  }
 
-        // Update total copies
-        int newTotalCopies = book.getTotalCopies() + quantityChange;
-        book.setTotalCopies(newTotalCopies);
+  @Override
+  public List<Transaction> getAllTransactions() {
+    return transactionRepository.findAll();
+  }
 
-        // Update available copies (assuming we're adding new copies)
-        if (quantityChange > 0) {
-            book.setAvailableCopies(book.getAvailableCopies() + quantityChange);
-        }
+  @Override
+  public List<Transaction> getTransactionsByStatus(String status) {
+    return transactionRepository.findByTransactionStatus(status);
+  }
 
-        return bookRepository.save(book);
+  @Override
+  public List<Transaction> getOverdueTransactions() {
+    LocalDate today = LocalDate.now();
+    return transactionRepository
+        .findByTransactionStatus(transactionStatusConfig.getBorrowed())
+        .stream()
+        .filter(transaction -> today.isAfter(transaction.getDueDate()))
+        .toList();
+  }
+
+  @Override
+  public Book updateBookAvailability(Long bookId, String availabilityStatus) {
+    Book book =
+        bookRepository
+            .findById(bookId)
+            .orElseThrow(() -> new ResourceNotFoundException("Book not found with id: " + bookId));
+
+    if ("YES".equals(availabilityStatus)) {
+      book.setAvailableCopies(book.getTotalCopies());
+    } else if ("NO".equals(availabilityStatus)) {
+      book.setAvailableCopies(0);
     }
 
-    @Override
-    public List<Transaction> getAllTransactions() {
-        return transactionRepository.findAll();
-    }
+    return bookRepository.save(book);
+  }
 
-    @Override
-    public List<Transaction> getTransactionsByStatus(String status) {
-        return transactionRepository.findByTransactionStatus(status);
-    }
+  @Override
+  public List<Book> getBooksWithLowStock(Integer threshold) {
+    int actualThreshold = threshold != null ? threshold : libraryConfig.getLowStockThreshold();
+    return bookRepository.findByAvailableCopiesLessThanEqual(actualThreshold);
+  }
 
-    @Override
-    public List<Transaction> getOverdueTransactions() {
-        LocalDate today = LocalDate.now();
-        List<Transaction> borrowedTransactions = transactionRepository.findByTransactionStatus(transactionStatusConfig.getBorrowed());
+  public void setLibraryConfig(LibraryConfig libraryConfig) {
+    this.libraryConfig = libraryConfig;
+  }
 
-        return borrowedTransactions.stream()
-                .filter(transaction -> today.isAfter(transaction.getDueDate()))
-                .toList();
-    }
+  public void setUserRoleConfig(UserRoleConfig userRoleConfig) {
+    this.userRoleConfig = userRoleConfig;
+  }
 
-    @Override
-    public Book updateBookAvailability(Long bookId, String availabilityStatus) {
-        Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new ResourceNotFoundException("Book not found with id: " + bookId));
+  public void setTransactionStatusConfig(TransactionStatusConfig transactionStatusConfig) {
+    this.transactionStatusConfig = transactionStatusConfig;
+  }
 
-        // Update available copies based on availability status
-        if ("YES".equals(availabilityStatus)) {
-            // Make all copies available
-            book.setAvailableCopies(book.getTotalCopies());
-        } else if ("NO".equals(availabilityStatus)) {
-            // Make no copies available
-            book.setAvailableCopies(0);
-        }
-
-        return bookRepository.save(book);
-    }
-
-    @Override
-    public List<Book> getBooksWithLowStock(Integer threshold) {
-        int actualThreshold = threshold != null ? threshold : libraryConfig.getLowStockThreshold();
-        return bookRepository.findByAvailableCopiesLessThanEqual(actualThreshold);
-    }
+  private BorrowedBookDTO toDTO(Transaction t) {
+    return new BorrowedBookDTO(
+        t.getTransactionId(),
+        t.getBook().getBookId(),
+        t.getBook().getBookTitle(),
+        t.getUser().getUserId(),
+        t.getBorrowDate(),
+        t.getDueDate(),
+        t.getReturnDate(),
+        t.getFineAmount());
+  }
 }

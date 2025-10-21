@@ -24,13 +24,8 @@ public class BookController {
     return new ResponseEntity<>(savedBook, HttpStatus.CREATED);
   }
 
-  // Get all books
-//  @GetMapping
-//  public ResponseEntity<List<Book>> getAllBooks() {
-//    List<Book> books = bookService.getAllBooks();
-//    return new ResponseEntity<>(books, HttpStatus.OK);
-//  }
 
+//Get all books
     @GetMapping("/list")
     public ResponseEntity<?> getAllBooks() {
         try {

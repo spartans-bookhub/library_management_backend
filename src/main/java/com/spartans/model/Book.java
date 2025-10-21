@@ -23,13 +23,9 @@ public class Book {
   private LocalDateTime createdAt;
   private Integer totalCopies;
   private Integer availableCopies;
-  private String title;
-    private boolean available;
+  private Integer rating;
 
-
-
-
-    public Book() {}
+  public Book() {}
 
   public Book(
       Long bookId,
@@ -43,7 +39,8 @@ public class Book {
       Double price,
       LocalDateTime createdAt,
       Integer totalCopies,
-      Integer availableCopies,boolean available) {
+      Integer availableCopies,
+      Integer rating) {
     this.bookId = bookId;
     this.bookTitle = bookTitle;
     this.bookAuthor = bookAuthor;
@@ -56,7 +53,7 @@ public class Book {
     this.createdAt = createdAt;
     this.totalCopies = totalCopies;
     this.availableCopies = availableCopies;
-    this.available = available;
+    this.rating = rating;
   }
 
   public Long getBookId() {
@@ -115,6 +112,14 @@ public class Book {
     this.availableCopies = availableCopies;
   }
 
+  public Integer getRating() {
+    return rating;
+  }
+
+  public void setRating(Integer rating) {
+    this.rating = rating;
+  }
+
   public LocalDateTime getCreatedAt() {
     return createdAt;
   }
@@ -154,12 +159,4 @@ public class Book {
   public void setPrice(Double price) {
     this.price = price;
   }
-
-    public boolean isAvailable() {
-        return available;
-    }
-
-    public void setAvailable(boolean available) {
-        this.available = available;
-    }
 }

@@ -41,7 +41,7 @@ class BookServiceImplTest {
     book.setAvailableCopies(10);
     book.setCreatedAt(LocalDateTime.now());
     book.setPublicationDate(LocalDate.now());
-    book.setAvailable(true);
+
   }
 
   //  Test addBook success

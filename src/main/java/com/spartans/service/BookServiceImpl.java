@@ -82,7 +82,7 @@ public class BookServiceImpl implements BookService {
                     result.put("Image URL", book.getImageUrl());
                     result.put("Publisher Name", book.getPublisherName());
                     result.put("Publication Date", book.getPublicationDate());
-                    result.put("Availability", book.isAvailable() ? "Available" : "Not Available");
+                    result.put("Availability", book.getAvailableCopies()>0 ? "Available" : "Not Available");
                     bookList.add(result);
                 }
                 response.put("books", bookList);
@@ -152,7 +152,4 @@ public class BookServiceImpl implements BookService {
       throw new BookNotFoundException("Book not found with title: " + bookTitle);
     }
   }
-
-
 }
-

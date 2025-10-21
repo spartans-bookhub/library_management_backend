@@ -1,5 +1,7 @@
 package com.spartans.service;
 
+import com.spartans.dto.BorrowBooksResponse;
+import com.spartans.dto.BorrowedBookDTO;
 import com.spartans.model.Book;
 import com.spartans.model.Transaction;
 import java.util.List;
@@ -9,7 +11,7 @@ public interface TransactionService {
   Transaction borrowBook(Long userId, Long bookId);
 
   // Return a book
-  Transaction returnBook(Long userId, Long bookId);
+  BorrowedBookDTO returnBook(Long userId, Long bookId);
 
   // Get all borrowed books for a student
   List<Transaction> getBorrowedBooks(Long userId);
@@ -29,7 +31,11 @@ public interface TransactionService {
   // Check if book is available
   boolean isBookAvailable(Long bookId);
 
-  // ---------Admin methods---------------
+  // --Admin methods--
+  List<Transaction> getAllBorrowingHistory();
+
+  List<Transaction> getBorrowingHistoryByUserId(Long userId);
+
   Book updateBookInventory(Long bookId, Integer quantityChange);
 
   // Get all transactions
@@ -46,4 +52,7 @@ public interface TransactionService {
 
   // Get all books with low stock
   List<Book> getBooksWithLowStock(Integer threshold);
+
+  // Borrow multiple books
+  BorrowBooksResponse borrowMultipleBooks(Long userId, List<Long> bookIds);
 }
