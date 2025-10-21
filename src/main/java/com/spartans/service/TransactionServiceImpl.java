@@ -14,6 +14,8 @@ import com.spartans.repository.TransactionRepository;
 import com.spartans.repository.UserRepository;
 import java.time.LocalDate;
 import java.util.*;
+
+import com.spartans.util.UserContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -174,15 +176,21 @@ public class TransactionServiceImpl implements TransactionService {
         .toList();
   }
 
-  @Override
-  public List<Transaction> getBorrowingHistory(Long userId) {
-    User user =
-        userRepository
-            .findById(userId)
-            .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+    @Override
+    public List<Transaction> getBorrowingHistory(Long userId) {
+        String role = UserContext.getRole();
 
-    return transactionRepository.findByUser(user);
-  }
+        if ("ADMIN".equalsIgnoreCase(role)) {
+            return transactionRepository.findAll();
+        }
+
+        User user =
+                userRepository
+                        .findById(userId)
+                        .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+
+        return transactionRepository.findByUser(user);
+    }
 
     @Override
     public List<Transaction> getAllBorrowingHistory() {
