@@ -22,7 +22,7 @@ public interface TransactionService {
   // Get borrowing history for a student
   List<Transaction> getBorrowingHistory(Long userId);
 
-    // Check if student can borrow more books
+  // Check if student can borrow more books
   boolean canBorrowMoreBooks(Long userId);
 
   // Get available books
