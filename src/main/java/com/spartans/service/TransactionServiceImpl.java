@@ -1,5 +1,6 @@
 package com.spartans.service;
 
+import com.spartans.config.AdminReportConfig;
 import com.spartans.config.LibraryConfig;
 import com.spartans.config.TransactionStatusConfig;
 import com.spartans.config.UserRoleConfig;
@@ -34,6 +35,9 @@ public class TransactionServiceImpl implements TransactionService {
   @Autowired private UserRoleConfig userRoleConfig;
 
   @Autowired private TransactionStatusConfig transactionStatusConfig;
+
+    @Autowired
+    private AdminReportConfig config;
 
   @Override
   public Transaction borrowBook(Long userId, Long bookId) {
@@ -299,6 +303,28 @@ public class TransactionServiceImpl implements TransactionService {
   public void setTransactionStatusConfig(TransactionStatusConfig transactionStatusConfig) {
     this.transactionStatusConfig = transactionStatusConfig;
   }
+
+  public List<Map<String, Object>> getHighFineUsers(double threshold) {
+        List<Object[]> results = transactionRepository.findUsersWithHighFines(config.getFineThreshold());
+        return results.stream()
+                .map(row -> Map.of(
+                        "userId", row[0],
+                        "userName", row[1],
+                        "contactNumber", row[2],
+                        "totalFine", row[3]))
+                .toList();
+    }
+
+  public List<Map<String, Object>> getRepeatedLateUsers(long threshold) {
+        List<Object[]> results = transactionRepository.findUsersWithRepeatedLateReturns(config.getLateThreshold());
+        return results.stream()
+                .map(row -> Map.of(
+                        "userId", row[0],
+                        "userName", row[1],
+                        "contactNumber", row[2],
+                        "lateCount", row[3]))
+                .toList();
+    }
 
   private BorrowedBookDTO toDTO(Transaction t) {
     return new BorrowedBookDTO(

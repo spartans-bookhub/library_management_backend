@@ -5,6 +5,7 @@ import com.spartans.dto.BorrowedBookDTO;
 import com.spartans.model.Book;
 import com.spartans.model.Transaction;
 import java.util.List;
+import java.util.Map;
 
 public interface TransactionService {
   // Borrow a book
@@ -31,6 +32,9 @@ public interface TransactionService {
   // Check if book is available
   boolean isBookAvailable(Long bookId);
 
+    // Borrow multiple books
+    BorrowBooksResponse borrowMultipleBooks(Long userId, List<Long> bookIds);
+
   // --Admin methods--
   List<Transaction> getAllBorrowingHistory();
 
@@ -53,6 +57,7 @@ public interface TransactionService {
   // Get all books with low stock
   List<Book> getBooksWithLowStock(Integer threshold);
 
-  // Borrow multiple books
-  BorrowBooksResponse borrowMultipleBooks(Long userId, List<Long> bookIds);
+  List<Map<String, Object>> getHighFineUsers(double threshold);
+
+  List<Map<String, Object>> getRepeatedLateUsers(long threshold);
 }

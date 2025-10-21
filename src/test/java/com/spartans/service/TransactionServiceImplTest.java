@@ -3,6 +3,7 @@ package com.spartans.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import com.spartans.config.AdminReportConfig;
 import com.spartans.config.LibraryConfig;
 import com.spartans.config.TransactionStatusConfig;
 import com.spartans.config.UserRoleConfig;
@@ -27,11 +28,12 @@ class TransactionServiceImplTest {
   @Mock private NotificationService notificationService;
 
   // Real config instances
+  private AdminReportConfig config;
   private LibraryConfig libraryConfig;
   private UserRoleConfig userRoleConfig;
   private TransactionStatusConfig transactionStatusConfig;
 
-  @BeforeEach
+    @BeforeEach
   void setUp() {
     MockitoAnnotations.openMocks(this);
 
@@ -270,6 +272,33 @@ class TransactionServiceImplTest {
 
     UserContext.clear();
   }
+
+    // users with high fine
+    public List<Map<String, Object>> getHighFineUsers(Double fineThreshold) {
+    double threshold = (fineThreshold != null) ? fineThreshold : config.getFineThreshold();
+    List<Object[]> results = transactionRepository.findUsersWithHighFines(threshold);
+    return results.stream()
+            .map(row -> Map.of(
+                    "userId", row[0],
+                    "userName", row[1],
+                    "contactNumber", row[2],
+                    "totalFine", row[3]))
+            .toList();
+    }
+
+    // Users with repeated late returns
+    public List<Map<String, Object>> getRepeatedLateUsers(Long lateThreshold) {
+        long threshold = (lateThreshold != null) ? lateThreshold : config.getLateThreshold();
+        List<Object[]> results = transactionRepository.findUsersWithRepeatedLateReturns(threshold);
+        return results.stream()
+                .map(row -> Map.of(
+                        "userId", row[0],
+                        "userName", row[1],
+                        "contactNumber", row[2],
+                        "lateCount", row[3]))
+                .toList();
+    }
+
 
   // ------------------- Helper Method -------------------
 
