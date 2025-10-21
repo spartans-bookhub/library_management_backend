@@ -3,7 +3,6 @@ package com.spartans.controller;
 import com.spartans.dto.BorrowBooksRequest;
 import com.spartans.dto.BorrowBooksResponse;
 import com.spartans.dto.BorrowedBookDTO;
-import com.spartans.exception.UnauthorizedAccessException;
 import com.spartans.model.Book;
 import com.spartans.model.Transaction;
 import com.spartans.service.TransactionService;
@@ -68,45 +67,13 @@ public class TransactionController {
     return ResponseEntity.ok(overdueBooks);
   }
 
-  // For both student & admin
+  // Get borrowing history for the logged-in student
   @GetMapping("/history")
-  public ResponseEntity<List<BorrowedBookDTO>> getBorrowingHistory() {
-    String role = UserContext.getRole();
-    Long userId = UserContext.getUserId();
-
-    List<Transaction> transactions;
-
-    if ("ADMIN".equalsIgnoreCase(role)) {
-      // Admin can view all borrowing history
-      transactions = transactionService.getAllBorrowingHistory();
-    } else if ("STUDENT".equalsIgnoreCase(role)) {
-      // Students can view only their own
-      transactions = transactionService.getBorrowingHistory(userId);
-    } else {
-      throw new UnauthorizedAccessException("Invalid user role: " + role);
-    }
-
-    List<BorrowedBookDTO> history = transactions.stream().map(this::mapToDTO).toList();
-
-    return ResponseEntity.ok(history);
-  }
-
-  // For ADMIN: Get borrowing history of a specific student
-  @GetMapping("/history/{userId}")
-  public ResponseEntity<List<BorrowedBookDTO>> getBorrowingHistoryByUserId(
-      @PathVariable Long userId) {
-    String role = UserContext.getRole();
-
-    if (!"ADMIN".equalsIgnoreCase(role)) {
-      throw new UnauthorizedAccessException(
-          "Access denied. Only admins can view another user's history.");
-    }
-
+  public ResponseEntity<List<BorrowedBookDTO>> getBorrowingHistory(HttpServletRequest request) {
     List<BorrowedBookDTO> history =
-        transactionService.getBorrowingHistoryByUserId(userId).stream()
+        transactionService.getBorrowingHistory(UserContext.getUserId()).stream()
             .map(this::mapToDTO)
             .toList();
-
     return ResponseEntity.ok(history);
   }
 

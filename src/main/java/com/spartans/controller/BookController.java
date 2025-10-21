@@ -1,12 +1,10 @@
 package com.spartans.controller;
 
-import com.spartans.model.Book;
+import com.spartans.dto.BookDTO;
 import com.spartans.service.BookService;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -19,47 +17,39 @@ public class BookController {
 
   // Add new book
   @PostMapping("/add")
-  public ResponseEntity<Book> addBook(@RequestBody Book book) {
-    Book savedBook = bookService.addBook(book);
+  public ResponseEntity<?> addBook(@RequestBody BookDTO book) {
+    BookDTO savedBook = bookService.addBook(book);
     return new ResponseEntity<>(savedBook, HttpStatus.CREATED);
   }
 
-
-//Get all books
-    @GetMapping("/list")
-    public ResponseEntity<?> getAllBooks() {
-        try {
-            List<Book> books = bookService.getAllBooks();
-            return ResponseEntity.ok(books);
-        } catch (RuntimeException e) {
-            // If list empty
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Collections.singletonMap("message", e.getMessage()));
-        } catch (Exception e) {
-            // Any unexpected error
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Collections.singletonMap("error", "Something went wrong"));
-        }
+  // Get all books
+  @GetMapping("/list")
+  public ResponseEntity<?> getAllBooks() {
+    try {
+      List<BookDTO> books = bookService.getAllBooks();
+      return ResponseEntity.ok(books);
+    } catch (RuntimeException e) {
+      // If list empty
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+          .body(Collections.singletonMap("message", e.getMessage()));
+    } catch (Exception e) {
+      // Any unexpected error
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(Collections.singletonMap("error", "Something went wrong"));
     }
+  }
 
   // Get book by ID
   @GetMapping("/{id}")
-  public ResponseEntity<Book> getBookById(@PathVariable Long id) {
-    Book book = bookService.getBookById(id);
+  public ResponseEntity<?> getBookById(@PathVariable Long id) {
+    BookDTO book = bookService.getBookById(id);
     return new ResponseEntity<>(book, HttpStatus.OK);
   }
 
-  // Get book by Title
-  //    @GetMapping("/title/{title}")
-  //    public ResponseEntity<Book> getBookByTitle(@PathVariable String title) {
-  //        Book book = bookService.getBookByTitle(title);
-  //        return new ResponseEntity<>(book, HttpStatus.OK);
-  //    }
-
   // Update existing book
-  @PutMapping("/update/{id}")
-  public ResponseEntity<Book> updateBook(@PathVariable Long id, @RequestBody Book updatedBook) {
-    Book updated = bookService.updateBook(id, updatedBook);
+  @PutMapping("/{id}")
+  public ResponseEntity<?> updateBook(@PathVariable Long id, @RequestBody BookDTO updatedBook) {
+    BookDTO updated = bookService.updateBook(id, updatedBook);
     return new ResponseEntity<>(updated, HttpStatus.OK);
   }
 
@@ -68,10 +58,11 @@ public class BookController {
     bookService.deleteBook(id);
     return ResponseEntity.ok("Book deleted successfully");
   }
-//Search Books
-    @GetMapping("/search")
-    public ResponseEntity<Map<String, Object>> searchBook(@RequestParam String keyword) {
-        Map<String, Object> result = bookService.searchBook(keyword);
-        return ResponseEntity.ok(result);
-    }
+
+  // Search Books
+  @GetMapping("/search")
+  public ResponseEntity<Map<String, Object>> searchBook(@RequestParam String keyword) {
+    Map<String, Object> result = bookService.searchBook(keyword);
+    return ResponseEntity.ok(result);
+  }
 }

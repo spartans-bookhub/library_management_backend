@@ -6,6 +6,7 @@ import com.spartans.model.User;
 import com.spartans.repository.NotificationRepository;
 import java.time.LocalDateTime;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
@@ -17,6 +18,9 @@ public class NotificationServiceImpl implements NotificationService {
   @Autowired JavaMailSender mailSender;
 
   @Autowired NotificationRepository notificationRepository;
+
+  @Value("${reset.password.link}")
+  String resetPasswordLink;
 
   // Generic method to save a notification
   private void saveNotification(User user, Book book, String type, String message, String status) {
@@ -102,5 +106,22 @@ public class NotificationServiceImpl implements NotificationService {
               book.getBookTitle(), daysLeft);
     }
     sendEmail(email, "Library Due Date Reminder", msg, user, book, "REMINDER");
+  }
+
+  @Async
+  @Override
+  public void sendPasswordResetReminder(String email, String resetToken) {
+    String subject = "Password Rest Link";
+    String resetLink = resetPasswordLink + resetToken; // front-end url
+    String msg =
+        String.format(
+            "To reset password, click the link below:\n '%s' "
+                + "\nIf you did not request, please ignore this email.",
+            resetLink);
+    sendEmail(email, subject, msg, "PASSWORD_RESET");
+  }
+
+  private void sendEmail(String to, String subject, String text, String type) {
+    sendEmail(to, subject, text, null, null, type);
   }
 }

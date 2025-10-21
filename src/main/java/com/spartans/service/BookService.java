@@ -1,22 +1,20 @@
 package com.spartans.service;
 
-import com.spartans.model.Book;
+import com.spartans.dto.BookDTO;
 import java.util.List;
 import java.util.Map;
 
 public interface BookService {
 
-    List<Book> getAllBooks();
-  Book addBook(Book book);
+  List<BookDTO> getAllBooks();
 
+  BookDTO addBook(BookDTO book);
 
-  Book getBookById(Long id);
+  BookDTO getBookById(Long id);
 
-  //    Book getBookByTitle(String title);
-  //    Book getBookTitle(String title);
-  Book getBookDetails(String bookTitle);
+  BookDTO getBookDetails(String bookTitle);
 
-  Book updateBook(Long id, Book updatedBook);
+  BookDTO updateBook(Long id, BookDTO updatedBook);
 
   void deleteBook(Long id);
 

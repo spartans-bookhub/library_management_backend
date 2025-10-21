@@ -6,7 +6,6 @@ import static org.mockito.Mockito.*;
 import com.spartans.dto.BorrowBooksRequest;
 import com.spartans.dto.BorrowBooksResponse;
 import com.spartans.dto.BorrowedBookDTO;
-import com.spartans.exception.UnauthorizedAccessException;
 import com.spartans.model.Book;
 import com.spartans.model.Transaction;
 import com.spartans.model.User;
@@ -159,6 +158,25 @@ class TransactionControllerTest {
     }
   }
 
+  // Get borrowing history
+  @Test
+  void testGetBorrowingHistory() {
+    Long userId = 1L;
+    Transaction t = createMockTransaction(200L, 99L, "History Book", userId);
+
+    when(transactionService.getBorrowingHistory(userId)).thenReturn(List.of(t));
+
+    try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
+      mockedUserContext.when(UserContext::getUserId).thenReturn(userId);
+
+      ResponseEntity<List<BorrowedBookDTO>> response = controller.getBorrowingHistory(request);
+
+      assertEquals(1, response.getBody().size());
+      assertEquals(200L, response.getBody().get(0).getTransactionId());
+      verify(transactionService).getBorrowingHistory(userId);
+    }
+  }
+
   // Can borrow more books
   @Test
   void testCanBorrowMoreBooks() {
@@ -173,78 +191,6 @@ class TransactionControllerTest {
 
       assertTrue(response.getBody());
       verify(transactionService).canBorrowMoreBooks(userId);
-    }
-  }
-
-  @Test
-  void testGetBorrowingHistory_AsStudent() {
-    Long userId = 1L;
-    Transaction t = createMockTransaction(200L, 99L, "History Book", userId);
-    when(transactionService.getBorrowingHistory(userId)).thenReturn(List.of(t));
-
-    try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
-      mockedUserContext.when(UserContext::getUserId).thenReturn(userId);
-      mockedUserContext.when(UserContext::getRole).thenReturn("STUDENT");
-
-      ResponseEntity<List<BorrowedBookDTO>> response = controller.getBorrowingHistory();
-
-      assertEquals(200, response.getStatusCodeValue());
-      assertEquals(1, response.getBody().size());
-      assertEquals(200L, response.getBody().get(0).getTransactionId());
-      verify(transactionService).getBorrowingHistory(userId);
-      verify(transactionService, never()).getAllBorrowingHistory();
-    }
-  }
-
-  // Get borrowing history for admin (all users)
-  @Test
-  void testGetBorrowingHistory_AsAdmin_AllUsers() {
-    Transaction t1 = createMockTransaction(1L, 101L, "Book A", 11L);
-    Transaction t2 = createMockTransaction(2L, 102L, "Book B", 12L);
-
-    when(transactionService.getAllBorrowingHistory()).thenReturn(List.of(t1, t2));
-
-    try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
-      mockedUserContext.when(UserContext::getRole).thenReturn("ADMIN");
-      mockedUserContext.when(UserContext::getUserId).thenReturn(0L);
-
-      ResponseEntity<List<BorrowedBookDTO>> response = controller.getBorrowingHistory();
-
-      assertEquals(200, response.getStatusCodeValue());
-      assertEquals(2, response.getBody().size());
-      verify(transactionService).getAllBorrowingHistory();
-      verify(transactionService, never()).getBorrowingHistory(anyLong());
-    }
-  }
-
-  // Admin getting a specific user’s history
-  @Test
-  void testGetBorrowingHistoryByUserId_AsAdmin() {
-    Long targetUserId = 5L;
-    Transaction t = createMockTransaction(300L, 201L, "Admin View Book", targetUserId);
-
-    when(transactionService.getBorrowingHistoryByUserId(targetUserId)).thenReturn(List.of(t));
-
-    try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
-      mockedUserContext.when(UserContext::getRole).thenReturn("ADMIN");
-
-      ResponseEntity<List<BorrowedBookDTO>> response =
-          controller.getBorrowingHistoryByUserId(targetUserId);
-
-      assertEquals(200, response.getStatusCodeValue());
-      assertEquals(1, response.getBody().size());
-      assertEquals(300L, response.getBody().get(0).getTransactionId());
-      verify(transactionService).getBorrowingHistoryByUserId(targetUserId);
-    }
-  }
-
-  // Unauthorized role access
-  @Test
-  void testGetBorrowingHistory_UnauthorizedRole() {
-    try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
-      mockedUserContext.when(UserContext::getRole).thenReturn("GUEST");
-
-      assertThrows(UnauthorizedAccessException.class, () -> controller.getBorrowingHistory());
     }
   }
 }
