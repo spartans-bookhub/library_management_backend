@@ -2,7 +2,11 @@ package com.spartans.controller;
 
 import com.spartans.model.Book;
 import com.spartans.service.BookService;
+
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -20,12 +24,23 @@ public class BookController {
     return new ResponseEntity<>(savedBook, HttpStatus.CREATED);
   }
 
-  // Get all books
-  @GetMapping
-  public ResponseEntity<List<Book>> getAllBooks() {
-    List<Book> books = bookService.getAllBooks();
-    return new ResponseEntity<>(books, HttpStatus.OK);
-  }
+
+//Get all books
+    @GetMapping("/list")
+    public ResponseEntity<?> getAllBooks() {
+        try {
+            List<Book> books = bookService.getAllBooks();
+            return ResponseEntity.ok(books);
+        } catch (RuntimeException e) {
+            // If list empty
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Collections.singletonMap("message", e.getMessage()));
+        } catch (Exception e) {
+            // Any unexpected error
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.singletonMap("error", "Something went wrong"));
+        }
+    }
 
   // Get book by ID
   @GetMapping("/{id}")
@@ -53,4 +68,10 @@ public class BookController {
     bookService.deleteBook(id);
     return ResponseEntity.ok("Book deleted successfully");
   }
+//Search Books
+    @GetMapping("/search")
+    public ResponseEntity<Map<String, Object>> searchBook(@RequestParam String keyword) {
+        Map<String, Object> result = bookService.searchBook(keyword);
+        return ResponseEntity.ok(result);
+    }
 }

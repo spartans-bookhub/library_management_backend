@@ -11,6 +11,7 @@ import com.spartans.model.*;
 import com.spartans.repository.BookRepository;
 import com.spartans.repository.TransactionRepository;
 import com.spartans.repository.UserRepository;
+import com.spartans.util.UserContext;
 import java.util.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -197,12 +198,6 @@ class TransactionServiceImplTest {
   }
 
   @Test
-  void getBorrowingHistoryUserNotFoundThrowsException() {
-    when(userRepository.findById(1L)).thenReturn(Optional.empty());
-    assertThrows(ResourceNotFoundException.class, () -> transactionService.getBorrowingHistory(1L));
-  }
-
-  @Test
   void canBorrowMoreBooksUserNotFoundThrowsException() {
     when(userRepository.findById(1L)).thenReturn(Optional.empty());
     assertThrows(ResourceNotFoundException.class, () -> transactionService.canBorrowMoreBooks(1L));
@@ -221,6 +216,59 @@ class TransactionServiceImplTest {
     assertThrows(
         ResourceNotFoundException.class,
         () -> transactionService.updateBookAvailability(1L, "YES"));
+  }
+
+  @Test
+  void getBorrowingHistoryUserNotFoundThrowsException() {
+    // Mock role as STUDENT
+    Map<String, Object> mockUser = Map.of("id", 1L, "role", "STUDENT", "email", "test@gmail.com");
+    UserContext.setUser(mockUser);
+
+    when(userRepository.findById(1L)).thenReturn(Optional.empty());
+
+    assertThrows(ResourceNotFoundException.class, () -> transactionService.getBorrowingHistory(1L));
+
+    UserContext.clear();
+  }
+
+  @Test
+  void getBorrowingHistoryForAdminReturnsAllTransactions() {
+    // Mock role as ADMIN
+    Map<String, Object> mockAdmin = Map.of("id", 99L, "role", "ADMIN", "email", "admin@gmail.com");
+    UserContext.setUser(mockAdmin);
+
+    List<Transaction> transactions = List.of(new Transaction(), new Transaction());
+    when(transactionRepository.findAll()).thenReturn(transactions);
+
+    List<Transaction> result = transactionService.getBorrowingHistory(99L);
+
+    assertEquals(2, result.size());
+    verify(transactionRepository, times(1)).findAll();
+    verify(userRepository, never()).findById(anyLong());
+
+    UserContext.clear();
+  }
+
+  @Test
+  void getBorrowingHistoryForStudentReturnsOnlyTheirTransactions() {
+    // Mock role as STUDENT
+    Map<String, Object> mockStudent =
+        Map.of("id", 10L, "role", "STUDENT", "email", "student@gmail.com");
+    UserContext.setUser(mockStudent);
+
+    User user = createUser(10L, "STUDENT");
+    List<Transaction> transactions = List.of(new Transaction(), new Transaction());
+
+    when(userRepository.findById(10L)).thenReturn(Optional.of(user));
+    when(transactionRepository.findByUser(user)).thenReturn(transactions);
+
+    List<Transaction> result = transactionService.getBorrowingHistory(10L);
+
+    assertEquals(2, result.size());
+    verify(transactionRepository, times(1)).findByUser(user);
+    verify(transactionRepository, never()).findAll();
+
+    UserContext.clear();
   }
 
   // ------------------- Helper Method -------------------

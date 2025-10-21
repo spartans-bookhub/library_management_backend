@@ -15,12 +15,90 @@ public class BookServiceImpl implements BookService {
   @Autowired private BookRepository bookRepository;
 
   // Get all books
-  @Override
-  public List<Book> getAllBooks() {
-    return bookRepository.findAll();
-  }
+//  @Override
+//  public List<Book> getAllBooks() {
+//    return bookRepository.findAll();
+//  }
 
-  // Add new book to bookList
+
+    @Override
+    public List<Book> getAllBooks() {
+        List<Book> books = bookRepository.findAll();
+
+        if (books.isEmpty()) {
+            throw new RuntimeException("No books are available");
+        }
+
+        return books;
+    }
+    //Searchbook
+    @Override
+    public Map<String, Object> searchBook(String keyword) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+
+            String normalizedKeyword = keyword.replaceAll("\\s+", "").toLowerCase();
+
+
+            List<Book> books = bookRepository.findByBookTitle(keyword);
+
+            if (books.isEmpty()) {
+                books = bookRepository.findByBookAuthor(keyword);
+            }
+            if (books.isEmpty()) {
+                books = bookRepository.findByIsbn(keyword);
+            }
+            if (books.isEmpty()) {
+                books = bookRepository.findByCategory(keyword);
+            }
+
+
+            if (books.isEmpty()) {
+                List<Book> allBooks = bookRepository.findAll();
+                for (Book book : allBooks) {
+                    String normalizedTitle = book.getBookTitle().replaceAll("\\s+", "").toLowerCase();
+                    String normalizedAuthor = book.getBookAuthor().replaceAll("\\s+", "").toLowerCase();
+                    String normalizedIsbn = book.getIsbn().replaceAll("\\s+", "").toLowerCase();
+                    String normalizedCategory = book.getCategory().replaceAll("\\s+", "").toLowerCase();
+
+                    if (normalizedTitle.contains(normalizedKeyword) ||
+                            normalizedAuthor.contains(normalizedKeyword) ||
+                            normalizedIsbn.contains(normalizedKeyword) ||
+                            normalizedCategory.contains(normalizedKeyword)) {
+                        books.add(book);
+                    }
+                }
+            }
+
+            if (!books.isEmpty()) {
+                List<Map<String, Object>> bookList = new ArrayList<>();
+                for (Book book : books) {
+                    Map<String, Object> result = new HashMap<>();
+                    result.put("Title", book.getBookTitle());
+                    result.put("Author", book.getBookAuthor());
+                    result.put("Category", book.getCategory());
+                    result.put("ISBN", book.getIsbn());
+                    result.put("Image URL", book.getImageUrl());
+                    result.put("Publisher Name", book.getPublisherName());
+                    result.put("Publication Date", book.getPublicationDate());
+                    result.put("Availability", book.getAvailableCopies()>0 ? "Available" : "Not Available");
+                    bookList.add(result);
+                }
+                response.put("books", bookList);
+            } else {
+                response.put("message", "Book not found for keyword: " + keyword);
+            }
+
+        } catch (Exception e) {
+            response.put("Error", "An unexpected error occurred: " + e.getMessage());
+        }
+
+        return response;
+    }
+
+
+    // Add new book to bookList
   @Override
   public Book addBook(Book book) {
     // check if book with same title/isbn alraedy exist
