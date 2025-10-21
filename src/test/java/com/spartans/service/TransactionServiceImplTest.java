@@ -33,7 +33,7 @@ class TransactionServiceImplTest {
   private UserRoleConfig userRoleConfig;
   private TransactionStatusConfig transactionStatusConfig;
 
-    @BeforeEach
+  @BeforeEach
   void setUp() {
     MockitoAnnotations.openMocks(this);
 
@@ -273,32 +273,35 @@ class TransactionServiceImplTest {
     UserContext.clear();
   }
 
-    // users with high fine
-    public List<Map<String, Object>> getHighFineUsers(Double fineThreshold) {
+  // users with high fine
+  public List<Map<String, Object>> getHighFineUsers(Double fineThreshold) {
     double threshold = (fineThreshold != null) ? fineThreshold : config.getFineThreshold();
     List<Object[]> results = transactionRepository.findUsersWithHighFines(threshold);
     return results.stream()
-            .map(row -> Map.of(
+        .map(
+            row ->
+                Map.of(
                     "userId", row[0],
                     "userName", row[1],
                     "contactNumber", row[2],
                     "totalFine", row[3]))
-            .toList();
-    }
+        .toList();
+  }
 
-    // Users with repeated late returns
-    public List<Map<String, Object>> getRepeatedLateUsers(Long lateThreshold) {
-        long threshold = (lateThreshold != null) ? lateThreshold : config.getLateThreshold();
-        List<Object[]> results = transactionRepository.findUsersWithRepeatedLateReturns(threshold);
-        return results.stream()
-                .map(row -> Map.of(
-                        "userId", row[0],
-                        "userName", row[1],
-                        "contactNumber", row[2],
-                        "lateCount", row[3]))
-                .toList();
-    }
-
+  // Users with repeated late returns
+  public List<Map<String, Object>> getRepeatedLateUsers(Long lateThreshold) {
+    long threshold = (lateThreshold != null) ? lateThreshold : config.getLateThreshold();
+    List<Object[]> results = transactionRepository.findUsersWithRepeatedLateReturns(threshold);
+    return results.stream()
+        .map(
+            row ->
+                Map.of(
+                    "userId", row[0],
+                    "userName", row[1],
+                    "contactNumber", row[2],
+                    "lateCount", row[3]))
+        .toList();
+  }
 
   // ------------------- Helper Method -------------------
 

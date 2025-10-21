@@ -32,8 +32,8 @@ public interface TransactionService {
   // Check if book is available
   boolean isBookAvailable(Long bookId);
 
-    // Borrow multiple books
-    BorrowBooksResponse borrowMultipleBooks(Long userId, List<Long> bookIds);
+  // Borrow multiple books
+  BorrowBooksResponse borrowMultipleBooks(Long userId, List<Long> bookIds);
 
   // --Admin methods--
   List<Transaction> getAllBorrowingHistory();

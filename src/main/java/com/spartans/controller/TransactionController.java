@@ -22,8 +22,7 @@ public class TransactionController {
 
   @Autowired private TransactionService transactionService;
 
-  @Autowired
-  private AdminReportConfig config;
+  @Autowired private AdminReportConfig config;
 
   // Borrow a single book
   @PostMapping("/book/{bookId}/borrow")
@@ -115,20 +114,19 @@ public class TransactionController {
   }
 
   // Users with total fine above a threshold : /high-fines?fineThreshold=500
-    @GetMapping("/high-fines")
-    public ResponseEntity<?> getHighFineUsers(
-            @RequestParam(required = false) Double fineThreshold) {
-        double threshold = (fineThreshold != null) ? fineThreshold : config.getFineThreshold();
-        return ResponseEntity.ok(transactionService.getHighFineUsers(threshold));
-    }
+  @GetMapping("/high-fines")
+  public ResponseEntity<?> getHighFineUsers(@RequestParam(required = false) Double fineThreshold) {
+    double threshold = (fineThreshold != null) ? fineThreshold : config.getFineThreshold();
+    return ResponseEntity.ok(transactionService.getHighFineUsers(threshold));
+  }
 
-    // Users with repeated late returns : /late-users?lateThreshold=3
-    @GetMapping("/late-users")
-    public ResponseEntity<?> getRepeatedLateUsers(
-            @RequestParam(required = false) Long lateThreshold) {
-        long threshold = (lateThreshold != null) ? lateThreshold : config.getLateThreshold();
-        return ResponseEntity.ok(transactionService.getRepeatedLateUsers(threshold));
-    }
+  // Users with repeated late returns : /late-users?lateThreshold=3
+  @GetMapping("/late-users")
+  public ResponseEntity<?> getRepeatedLateUsers(
+      @RequestParam(required = false) Long lateThreshold) {
+    long threshold = (lateThreshold != null) ? lateThreshold : config.getLateThreshold();
+    return ResponseEntity.ok(transactionService.getRepeatedLateUsers(threshold));
+  }
 
   // Get available books
   @GetMapping("/books/available")
