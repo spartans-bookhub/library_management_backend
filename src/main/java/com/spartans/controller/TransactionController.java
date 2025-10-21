@@ -68,46 +68,47 @@ public class TransactionController {
     return ResponseEntity.ok(overdueBooks);
   }
 
-    // For both student & admin
-    @GetMapping("/history")
-    public ResponseEntity<List<BorrowedBookDTO>> getBorrowingHistory() {
-        String role = UserContext.getRole();
-        Long userId = UserContext.getUserId();
+  // For both student & admin
+  @GetMapping("/history")
+  public ResponseEntity<List<BorrowedBookDTO>> getBorrowingHistory() {
+    String role = UserContext.getRole();
+    Long userId = UserContext.getUserId();
 
-        List<Transaction> transactions;
+    List<Transaction> transactions;
 
-        if ("ADMIN".equalsIgnoreCase(role)) {
-            // Admin can view all borrowing history
-            transactions = transactionService.getAllBorrowingHistory();
-        } else if ("STUDENT".equalsIgnoreCase(role)) {
-            // Students can view only their own
-            transactions = transactionService.getBorrowingHistory(userId);
-        } else {
-            throw new UnauthorizedAccessException("Invalid user role: " + role);
-        }
-
-        List<BorrowedBookDTO> history =
-                transactions.stream().map(this::mapToDTO).toList();
-
-        return ResponseEntity.ok(history);
+    if ("ADMIN".equalsIgnoreCase(role)) {
+      // Admin can view all borrowing history
+      transactions = transactionService.getAllBorrowingHistory();
+    } else if ("STUDENT".equalsIgnoreCase(role)) {
+      // Students can view only their own
+      transactions = transactionService.getBorrowingHistory(userId);
+    } else {
+      throw new UnauthorizedAccessException("Invalid user role: " + role);
     }
 
-    // For ADMIN: Get borrowing history of a specific student
-    @GetMapping("/history/{userId}")
-    public ResponseEntity<List<BorrowedBookDTO>> getBorrowingHistoryByUserId(@PathVariable Long userId) {
-        String role = UserContext.getRole();
+    List<BorrowedBookDTO> history = transactions.stream().map(this::mapToDTO).toList();
 
-        if (!"ADMIN".equalsIgnoreCase(role)) {
-            throw new UnauthorizedAccessException("Access denied. Only admins can view another user's history.");
-        }
+    return ResponseEntity.ok(history);
+  }
 
-        List<BorrowedBookDTO> history =
-                transactionService.getBorrowingHistoryByUserId(userId).stream()
-                        .map(this::mapToDTO)
-                        .toList();
+  // For ADMIN: Get borrowing history of a specific student
+  @GetMapping("/history/{userId}")
+  public ResponseEntity<List<BorrowedBookDTO>> getBorrowingHistoryByUserId(
+      @PathVariable Long userId) {
+    String role = UserContext.getRole();
 
-        return ResponseEntity.ok(history);
+    if (!"ADMIN".equalsIgnoreCase(role)) {
+      throw new UnauthorizedAccessException(
+          "Access denied. Only admins can view another user's history.");
     }
+
+    List<BorrowedBookDTO> history =
+        transactionService.getBorrowingHistoryByUserId(userId).stream()
+            .map(this::mapToDTO)
+            .toList();
+
+    return ResponseEntity.ok(history);
+  }
 
   // Check if student can borrow more books
   @GetMapping("/can-borrow")
