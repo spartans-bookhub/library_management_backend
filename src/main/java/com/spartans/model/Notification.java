@@ -19,7 +19,7 @@ public class Notification {
   @JoinColumn(name = "book_id")
   private Book book;
 
-  private String type; // BORROWED, RETURNED, LATE, REMINDER
+  private String type; // BORROWED, RETURNED, LATE, REMINDER, PASSWORD_RESET
   private String message;
   private String status; // PENDING, SENT, FAILED
 

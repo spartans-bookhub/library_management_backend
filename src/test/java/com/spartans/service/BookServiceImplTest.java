@@ -3,12 +3,16 @@ package com.spartans.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import com.spartans.dto.BookDTO;
 import com.spartans.exception.BookNotFoundException;
+import com.spartans.mapper.BookMapper;
 import com.spartans.model.Book;
 import com.spartans.repository.BookRepository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,60 +26,72 @@ class BookServiceImplTest {
 
   @InjectMocks private BookServiceImpl bookService;
 
+  @Mock private BookMapper mapper;
+
   private Book book;
+  private BookDTO bookDto;
+  private Book savedBook;
 
   @BeforeEach
   void setUp() {
     MockitoAnnotations.openMocks(this);
 
-    book = new Book();
-    book.setBookId(1L);
-    book.setBookTitle("Effective Java");
-    book.setBookAuthor("Joshua Bloch");
-    book.setCategory("Programming");
-    book.setIsbn("978-0134685991");
-    book.setPrice(700.50);
-    book.setTotalCopies(10);
-    book.setAvailableCopies(10);
-    book.setCreatedAt(LocalDateTime.now());
-    book.setPublicationDate(LocalDate.now());
+    book =
+        new Book(
+            1L,
+            "Effective Java",
+            "Joshua Bloch",
+            "Programming",
+            "978-0134685991",
+            "https://via.placeholder.com/150",
+            "Publisher",
+            LocalDate.now(),
+            700.50,
+            LocalDateTime.now(),
+            50,
+            50,
+            5);
+    bookDto =
+        new BookDTO(
+            1L,
+            "Effective Java",
+            "Joshua Bloch",
+            "Programming",
+            "978-0134685991",
+            "https://via.placeholder.com/150",
+            "Publisher",
+            LocalDate.now(),
+            700.50,
+            LocalDateTime.now(),
+            50,
+            50,
+            5);
   }
 
   //  Test addBook success
   @Test
   void testAddBook_Success() {
+
+    when(mapper.toBookEntity(bookDto)).thenReturn(book);
+    when(mapper.toBookDto(book)).thenReturn(bookDto);
     when(bookRepository.findByIsbnIgnoreCase(anyString())).thenReturn(Optional.empty());
     when(bookRepository.save(any(Book.class))).thenReturn(book);
 
-    Book saved = bookService.addBook(book);
-
+    BookDTO saved = bookService.addBook(bookDto);
     assertNotNull(saved);
-    assertEquals("Effective Java", saved.getBookTitle());
     verify(bookRepository, times(1)).save(book);
   }
-
-  //  Test addBook duplicate ISBN
-  //  @Test
-  //  void testAddBook_DuplicateISBN() {
-  //    when(bookRepository.findByIsbnIgnoreCase(book.getIsbn())).thenReturn(Optional.of(book));
-  //
-  //      DuplicateBookException exception =
-  //        assertThrows(DuplicateBookException.class,
-  //            () -> {
-  //              bookService.addBook(book);
-  //            });
-  //
-  //    assertEquals("Book with the same ISBN already exists", exception.getMessage());
-  //  }
 
   //  Test getBookById success
   @Test
   void testGetBookById_Success() {
+    when(mapper.toBookEntity(bookDto)).thenReturn(book);
+    when(mapper.toBookDto(book)).thenReturn(bookDto);
     when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
 
-    Book found = bookService.getBookById(1L);
+    BookDTO found = bookService.getBookById(1L);
 
-    assertEquals("Effective Java", found.getBookTitle());
+    assertEquals("Effective Java", found.bookTitle());
     verify(bookRepository, times(1)).findById(1L);
   }
 
@@ -93,22 +109,42 @@ class BookServiceImplTest {
     Book updated = new Book();
     updated.setBookTitle("Clean Code");
     updated.setBookAuthor("Robert C. Martin");
+    bookDto =
+        new BookDTO(
+            1L,
+            "Clean Code",
+            "Robert C. Martin",
+            "Programming",
+            "978-0134685991",
+            "https://via.placeholder.com/150",
+            "Publisher",
+            LocalDate.now(),
+            700.50,
+            LocalDateTime.now(),
+            50,
+            50,
+            5);
+    when(mapper.toBookEntity(bookDto)).thenReturn(updated);
+    when(mapper.toBookDto(updated)).thenReturn(bookDto);
 
     when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
     when(bookRepository.save(any(Book.class))).thenReturn(updated);
 
-    Book result = bookService.updateBook(1L, updated);
+    BookDTO result = bookService.updateBook(1L, bookDto);
 
-    assertEquals("Clean Code", result.getBookTitle());
+    assertEquals("Clean Code", result.bookTitle());
     verify(bookRepository, times(1)).save(book);
   }
 
   //  Test updateBook not found
   @Test
   void testUpdateBook_NotFound() {
+
+    when(mapper.toBookEntity(bookDto)).thenReturn(book);
+    when(mapper.toBookDto(book)).thenReturn(bookDto);
     when(bookRepository.findById(10L)).thenReturn(Optional.empty());
 
-    assertThrows(BookNotFoundException.class, () -> bookService.updateBook(10L, book));
+    assertThrows(BookNotFoundException.class, () -> bookService.updateBook(10L, bookDto));
   }
 
   //  Test deleteBook success
@@ -132,9 +168,11 @@ class BookServiceImplTest {
   //  Test getAllBooks
   @Test
   void testGetAllBooks() {
+
+    when(mapper.toBookDto(book)).thenReturn(bookDto);
     when(bookRepository.findAll()).thenReturn(List.of(book));
 
-    List<Book> books = bookService.getAllBooks();
+    List<BookDTO> books = bookService.getAllBooks();
 
     assertEquals(1, books.size());
     verify(bookRepository, times(1)).findAll();
@@ -143,11 +181,13 @@ class BookServiceImplTest {
   //  Test getBookDetails success
   @Test
   void testGetBookDetails_Success() {
+    when(mapper.toBookEntity(bookDto)).thenReturn(book);
+    when(mapper.toBookDto(book)).thenReturn(bookDto);
     when(bookRepository.findByBookTitleIgnoreCase("Effective Java")).thenReturn(Optional.of(book));
 
-    Book result = bookService.getBookDetails("Effective Java");
+    BookDTO result = bookService.getBookDetails("Effective Java");
 
-    assertEquals("Effective Java", result.getBookTitle());
+    assertEquals("Effective Java", result.bookTitle());
     verify(bookRepository, times(1)).findByBookTitleIgnoreCase("Effective Java");
   }
 
@@ -157,5 +197,40 @@ class BookServiceImplTest {
     when(bookRepository.findByBookTitleIgnoreCase("Unknown Book")).thenReturn(Optional.empty());
 
     assertThrows(BookNotFoundException.class, () -> bookService.getBookDetails("Unknown Book"));
+  }
+
+  @Test
+  void testSearchBookByTitle_Positive() {
+    when(bookRepository.findByBookTitle("Java Basics")).thenReturn(Collections.singletonList(book));
+
+    Map<String, Object> result = bookService.searchBook("Java Basics");
+
+    assertTrue(result.containsKey("books"));
+    List<Map<String, Object>> books = (List<Map<String, Object>>) result.get("books");
+    assertEquals(1, books.size());
+    assertEquals("Effective Java", books.get(0).get("Title"));
+  }
+
+  @Test
+  void testSearchBookByAuthor_Positive() {
+    when(bookRepository.findByBookTitle("John Doe")).thenReturn(Collections.emptyList());
+    when(bookRepository.findByBookAuthor("John Doe")).thenReturn(Collections.singletonList(book));
+
+    Map<String, Object> result = bookService.searchBook("John Doe");
+
+    assertTrue(result.containsKey("books"));
+  }
+
+  @Test
+  void testSearchBook_NotFound_Negative() {
+    when(bookRepository.findByBookTitle("Unknown")).thenReturn(Collections.emptyList());
+    when(bookRepository.findByBookAuthor("Unknown")).thenReturn(Collections.emptyList());
+    when(bookRepository.findByIsbn("Unknown")).thenReturn(Collections.emptyList());
+    when(bookRepository.findByCategory("Unknown")).thenReturn(Collections.emptyList());
+
+    Map<String, Object> result = bookService.searchBook("Unknown");
+
+    assertTrue(result.containsKey("message"));
+    assertEquals("Book not found for keyword: Unknown", result.get("message"));
   }
 }

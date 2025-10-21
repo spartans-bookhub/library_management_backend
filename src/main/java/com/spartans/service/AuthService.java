@@ -8,4 +8,8 @@ public interface AuthService {
   public LoginResponseDTO login(LoginRequestDTO request);
 
   public boolean changePassword(PasswordRequestDTO request);
+
+  public void processForgotPassword(ForgotPasswordDTO request);
+
+  public boolean resetPassword(ResetPasswordDTO request);
 }

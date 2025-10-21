@@ -1,10 +1,7 @@
 package com.spartans.service;
 
 import com.spartans.dto.*;
-import com.spartans.exception.DBException;
-import com.spartans.exception.InvalidLoginException;
-import com.spartans.exception.UserAlreadyExistException;
-import com.spartans.exception.UserNotFoundException;
+import com.spartans.exception.*;
 import com.spartans.mapper.UserMapper;
 import com.spartans.model.User;
 import com.spartans.model.UserAuth;
@@ -12,6 +9,7 @@ import com.spartans.repository.AuthRepository;
 import com.spartans.util.JWTUtils;
 import com.spartans.util.UserContext;
 import java.time.LocalDateTime;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,6 +25,8 @@ public class AuthServiceImpl implements AuthService {
   @Autowired PasswordEncoder passwordEncoder;
 
   @Autowired JWTUtils jwtUtil;
+
+  @Autowired NotificationService notificationService;
 
   @Override
   public boolean register(RegisterRequestDTO request) {
@@ -88,6 +88,47 @@ public class AuthServiceImpl implements AuthService {
       return true;
     }
     return false;
+  }
+
+  @Override
+  public void processForgotPassword(ForgotPasswordDTO request) {
+    // Check if user exists
+    UserAuth userAuth =
+        authRepo
+            .findById(request.email())
+            .orElseThrow(() -> new UserNotFoundException("This email is not registered"));
+    System.out.println("userAuth=" + userAuth.getEmail());
+
+    // Create reset token
+    String resetToken = UUID.randomUUID().toString();
+
+    // Add reset link
+    userAuth.setResetToken(resetToken);
+    authRepo.save(userAuth);
+
+    // send reset link
+    notificationService.sendPasswordResetReminder(request.email(), resetToken);
+  }
+
+  @Override
+  public boolean resetPassword(ResetPasswordDTO request) {
+    // Check if passwords match
+    if (!request.newPassword().equals(request.confirmNewPassword()))
+      throw new IllegalArgumentException("New password and confirmation do not match");
+
+    // Validate and fetch userAuth with the token
+    UserAuth userAuth =
+        authRepo
+            .findByResetToken(request.resetToken())
+            .orElseThrow(
+                () ->
+                    new ResourceNotFoundException(
+                        "Password cannot be reset with the same URL again."));
+
+    userAuth.setPassword(passwordEncoder.encode(request.newPassword()));
+    userAuth.setResetToken("");
+    authRepo.save(userAuth);
+    return true;
   }
 
   private boolean validatePassword(String password, String savedPassword) {

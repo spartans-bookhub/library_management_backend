@@ -2,7 +2,6 @@ package com.spartans.exception;
 
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureException;
-import java.nio.file.AccessDeniedException;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -68,7 +67,6 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler({UserAlreadyExistException.class, DataIntegrityViolationException.class})
   public ResponseEntity<String> handleUserAlreadyExistsException(RuntimeException ex) {
-    ex.printStackTrace();
     return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
   }
 
@@ -82,8 +80,8 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
   }
 
-  @ExceptionHandler(AccessDeniedException.class)
-  public ResponseEntity<?> handleAccessDeniedException(AccessDeniedException ex) {
+  @ExceptionHandler(ForbiddenException.class)
+  public ResponseEntity<?> handleForbiddenException(ForbiddenException ex) {
     return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
   }
 }

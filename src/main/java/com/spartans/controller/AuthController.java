@@ -33,8 +33,20 @@ public class AuthController {
   }
 
   @PostMapping("/api/password")
-  public ResponseEntity<?> changePassword(@Valid @RequestBody PasswordRequestDTO passwordReqDto) {
-    authService.changePassword(passwordReqDto);
+  public ResponseEntity<?> changePassword(@Valid @RequestBody PasswordRequestDTO passwordRequest) {
+    authService.changePassword(passwordRequest);
     return ResponseEntity.ok().body("Password changed successfully");
+  }
+
+  @PostMapping("/forgot-password")
+  public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordDTO passwordRequest) {
+    authService.processForgotPassword(passwordRequest);
+    return ResponseEntity.ok().build();
+  }
+
+  @PostMapping("/password-reset")
+  public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordDTO passwordRequest) {
+    authService.resetPassword(passwordRequest);
+    return ResponseEntity.ok().build();
   }
 }
