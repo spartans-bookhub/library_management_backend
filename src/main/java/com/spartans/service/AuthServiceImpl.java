@@ -41,7 +41,7 @@ public class AuthServiceImpl implements AuthService {
     user.setUserAuth(userAuth);
     userAuth.setStudent(user);
     try {
-      userAuth = authRepo.save(userAuth);
+      authRepo.save(userAuth);
     } catch (DataIntegrityViolationException ex) {
       throw new UserAlreadyExistException("Email already registered");
     } catch (Exception ex) {
@@ -62,7 +62,8 @@ public class AuthServiceImpl implements AuthService {
     }
 
     // Validate password
-    validatePassword(request.password(), userAuth.getPassword());
+    validatePassword(
+        request.password(), userAuth.getPassword(), "Login email or password is wrong");
 
     // Generate JWT
     String token = jwtUtil.generateToken(userAuth);
@@ -82,7 +83,8 @@ public class AuthServiceImpl implements AuthService {
       throw new IllegalArgumentException("New passwords do not match");
 
     // Check if old password is correct
-    if (validatePassword(request.oldPassword(), userAuth.getPassword())) {
+    if (validatePassword(
+        request.oldPassword(), userAuth.getPassword(), "Current password is incorrect")) {
       userAuth.setPassword(passwordEncoder.encode(request.newPassword()));
       authRepo.save(userAuth);
       return true;
@@ -131,10 +133,10 @@ public class AuthServiceImpl implements AuthService {
     return true;
   }
 
-  private boolean validatePassword(String password, String savedPassword) {
+  private boolean validatePassword(String password, String savedPassword, String errorMessage) {
     if (passwordEncoder.matches(password, savedPassword)) {
       return true;
     }
-    throw new InvalidLoginException("Login email or password is wrong");
+    throw new InvalidLoginException(errorMessage);
   }
 }
