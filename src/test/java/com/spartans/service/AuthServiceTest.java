@@ -145,7 +145,7 @@ class AuthServiceTest {
   @Test
   void testLoginInvalidLogin() {
     LoginRequestDTO request = mock(LoginRequestDTO.class);
-    when(request.email()).thenReturn("user@example.com");
+    when(request.email()).thenReturn("user@test.com");
     when(request.password()).thenReturn("wrongPassword");
 
     UserAuth userAuth = new UserAuth();
@@ -153,7 +153,7 @@ class AuthServiceTest {
     userAuth.setStudent(new User());
     userAuth.setPassword("encodedPassword");
 
-    when(authRepo.findById("user@example.com")).thenReturn(Optional.of(userAuth));
+    when(authRepo.findById("user@test.com")).thenReturn(Optional.of(userAuth));
     when(passwordEncoder.matches("wrongPassword", "encodedPassword")).thenReturn(false);
 
     assertThrows(InvalidLoginException.class, () -> authService.login(request));
@@ -162,22 +162,22 @@ class AuthServiceTest {
   @Test
   void testLoginSuccess() {
     LoginRequestDTO request = mock(LoginRequestDTO.class);
-    when(request.email()).thenReturn("user@example.com");
+    when(request.email()).thenReturn("user@test.com");
     when(request.password()).thenReturn("correctPassword");
 
     UserAuth userAuth = new UserAuth();
     userAuth.setRole("STUDENT");
     User student = new User();
     userAuth.setStudent(student);
-    userAuth.setEmail("user@example.com");
+    userAuth.setEmail("user@test.com");
     userAuth.setPassword("encodedPassword");
 
-    when(authRepo.findById("user@example.com")).thenReturn(Optional.of(userAuth));
+    when(authRepo.findById("user@test.com")).thenReturn(Optional.of(userAuth));
     when(passwordEncoder.matches("correctPassword", "encodedPassword")).thenReturn(true);
     when(jwtUtil.generateToken(userAuth)).thenReturn("token123");
 
     LoginResponseDTO responseDTO = mock(LoginResponseDTO.class);
-    when(mapper.toLoginDto(student, "user@example.com", "STUDENT", "token123"))
+    when(mapper.toLoginDto(student, "user@test.com", "STUDENT", "token123"))
         .thenReturn(responseDTO);
 
     LoginResponseDTO result = authService.login(request);
@@ -186,16 +186,16 @@ class AuthServiceTest {
   }
 
   @Test
-  void changePasswordSuccess() {
+  void testChangePasswordSuccess() {
     try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
-      mockedUserContext.when(UserContext::getEmail).thenReturn("user@example.com");
+      mockedUserContext.when(UserContext::getEmail).thenReturn("user@test.com");
 
       UserAuth userAuth = new UserAuth();
       userAuth.setPassword("encodedOldPassword");
 
       PasswordRequestDTO request = new PasswordRequestDTO("OldPass1!", "NewPass2@", "NewPass2@");
 
-      when(authRepo.findById("user@example.com")).thenReturn(Optional.of(userAuth));
+      when(authRepo.findById("user@test.com")).thenReturn(Optional.of(userAuth));
       when(passwordEncoder.matches("OldPass1!", "encodedOldPassword")).thenReturn(true);
       when(passwordEncoder.encode("NewPass2@")).thenReturn("encodedNewPassword");
       when(authRepo.save(any(UserAuth.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -205,7 +205,7 @@ class AuthServiceTest {
       assertTrue(result);
       assertEquals("encodedNewPassword", userAuth.getPassword());
 
-      verify(authRepo).findById("user@example.com");
+      verify(authRepo).findById("user@test.com");
       verify(passwordEncoder).matches("OldPass1!", "encodedOldPassword");
       verify(passwordEncoder).encode("NewPass2@");
       verify(authRepo).save(userAuth);
@@ -213,10 +213,10 @@ class AuthServiceTest {
   }
 
   @Test
-  void changePasswordUserNotFound() {
+  void testChangePasswordUserNotFound() {
     try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
-      mockedUserContext.when(UserContext::getEmail).thenReturn("user@example.com");
-      String email = "user@example.com";
+      mockedUserContext.when(UserContext::getEmail).thenReturn("user@test.com");
+      String email = "user@test.com";
 
       PasswordRequestDTO request = new PasswordRequestDTO("OldPass1!", "NewPass2@", "NewPass2@");
 
@@ -236,10 +236,10 @@ class AuthServiceTest {
   }
 
   @Test
-  void changePassword_newPasswordsMismatch_throwsIllegalArgumentException() {
+  void testChangePasswordNewPasswordsMismatch() {
     try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
-      mockedUserContext.when(UserContext::getEmail).thenReturn("user@example.com");
-      String email = "user@example.com";
+      mockedUserContext.when(UserContext::getEmail).thenReturn("user@test.com");
+      String email = "user@test.com";
 
       UserAuth userAuth = new UserAuth();
       userAuth.setPassword("encodedOldPassword");
@@ -263,10 +263,10 @@ class AuthServiceTest {
   }
 
   @Test
-  void changePassword_oldPasswordIncorrect_throwsInvalidLoginException() {
+  void testChangePasswordOldPasswordIncorrect() {
     try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
-      mockedUserContext.when(UserContext::getEmail).thenReturn("user@example.com");
-      String email = "user@example.com";
+      mockedUserContext.when(UserContext::getEmail).thenReturn("user@test.com");
+      String email = "user@test.com";
 
       UserAuth userAuth = new UserAuth();
       userAuth.setPassword("encodedOldPassword");
@@ -283,7 +283,7 @@ class AuthServiceTest {
               () -> {
                 authService.changePassword(request);
               });
-      assertEquals("Login email or password is wrong", ex.getMessage());
+      assertEquals("Current password is incorrect", ex.getMessage());
 
       verify(authRepo).findById(email);
       verify(passwordEncoder).matches("WrongOldPass!", "encodedOldPassword");

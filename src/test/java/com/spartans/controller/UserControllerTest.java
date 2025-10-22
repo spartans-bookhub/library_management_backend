@@ -9,7 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spartans.dto.*;
 import com.spartans.exception.*;
-import com.spartans.service.UserServiceImpl;
+import com.spartans.service.UserService;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,7 +25,7 @@ public class UserControllerTest {
 
   @InjectMocks private UserController userController;
 
-  @Mock private UserServiceImpl userService;
+  @Mock private UserService userService;
 
   private MockMvc mockMvc;
 
@@ -50,7 +50,7 @@ public class UserControllerTest {
     when(userService.getUser(userId)).thenReturn(userDto);
 
     mockMvc
-        .perform(get("/api/v1/user/{id}", userId))
+        .perform(get("/api/user/{id}", userId))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.userName").value("John Doe"))
         .andExpect(jsonPath("$.email").value("john@example.com"));
@@ -64,7 +64,7 @@ public class UserControllerTest {
         .thenThrow(new UserNotFoundException("User not found with this email"));
 
     mockMvc
-        .perform(get("/api/v1/user/{id}", userId))
+        .perform(get("/api/user/{id}", userId))
         .andExpect(status().isNotFound())
         .andExpect(content().string("User not found with this email"));
   }
@@ -82,7 +82,7 @@ public class UserControllerTest {
 
     mockMvc
         .perform(
-            put("/api/v1/user/{id}", userId)
+            put("/api/user/{id}", userId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isOk())
@@ -101,7 +101,7 @@ public class UserControllerTest {
 
     mockMvc
         .perform(
-            put("/api/v1/user/{id}", userId)
+            put("/api/user/{id}", userId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isNotFound())
@@ -118,7 +118,7 @@ public class UserControllerTest {
     when(userService.getAllUsers()).thenReturn(users);
 
     mockMvc
-        .perform(get("/api/v1/user"))
+        .perform(get("/api/user"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(2))
         .andExpect(jsonPath("$[0].userName").value("John Doe"))
@@ -132,7 +132,7 @@ public class UserControllerTest {
     when(userService.deleteUser(userId)).thenReturn(true);
 
     mockMvc
-        .perform(delete("/api/v1/user/{id}", userId))
+        .perform(delete("/api/user/{id}", userId))
         .andExpect(status().isOk())
         .andExpect(content().string("true"));
   }
@@ -145,7 +145,7 @@ public class UserControllerTest {
         .thenThrow(new UserNotFoundException("This user is not found"));
 
     mockMvc
-        .perform(delete("/api/v1/user/{id}", userId))
+        .perform(delete("/api/user/{id}", userId))
         .andExpect(status().isNotFound())
         .andExpect(content().string("This user is not found"));
   }
