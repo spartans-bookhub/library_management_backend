@@ -7,7 +7,6 @@ import com.spartans.repository.NotificationRepository;
 import java.time.LocalDateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -18,6 +17,8 @@ public class NotificationServiceImpl implements NotificationService {
   @Autowired JavaMailSender mailSender;
 
   @Autowired NotificationRepository notificationRepository;
+
+  @Autowired EmailService emailService;
 
   @Value("${reset.password.link}")
   String resetPasswordLink;
@@ -46,13 +47,14 @@ public class NotificationServiceImpl implements NotificationService {
       return;
     }
 
-    SimpleMailMessage message = new SimpleMailMessage();
-    message.setTo(to);
-    message.setSubject(subject);
-    message.setText(text);
+    //    SimpleMailMessage message = new SimpleMailMessage();
+    //    message.setTo(to);
+    //    message.setSubject(subject);
+    //    message.setText(text);
 
     try {
-      mailSender.send(message);
+      emailService.sendEmail(to, subject, text);
+      //      mailSender.send(message);
       System.out.println("Email sent to " + to + ": " + subject);
       saveNotification(user, book, type, text, "SENT");
     } catch (Exception e) {
@@ -111,7 +113,8 @@ public class NotificationServiceImpl implements NotificationService {
   @Async
   @Override
   public void sendPasswordResetReminder(String email, String resetToken) {
-    String subject = "Password Rest Link";
+    System.out.println("resetToken=" + resetToken);
+    String subject = "Password Reset Link";
     String resetLink = resetPasswordLink + resetToken; // front-end url
     String msg =
         String.format(
