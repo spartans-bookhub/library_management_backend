@@ -2,7 +2,6 @@ package com.spartans.service;
 
 import com.spartans.dto.BookDTO;
 import com.spartans.exception.BookNotFoundException;
-import com.spartans.exception.DuplicateBookException;
 import com.spartans.mapper.BookMapper;
 import com.spartans.model.Book;
 import com.spartans.repository.BookRepository;
@@ -98,12 +97,23 @@ public class BookServiceImpl implements BookService {
   @Override
   public BookDTO addBook(BookDTO bookDto) {
     // check if book with same title/isbn alraedy exist
-    Book book = mapper.toBookEntity(bookDto);
-    if (bookRepository.findByIsbnIgnoreCase(book.getIsbn()).isPresent()) {
-      throw new DuplicateBookException(
-          "Book with title '" + book.getBookTitle() + "' already exists!");
-    }
-    book.setCreatedAt(LocalDateTime.now());
+    Book book =
+        bookRepository
+            .findByIsbnIgnoreCase(bookDto.isbn())
+            .map(
+                (existingBook) -> {
+                  existingBook.setTotalCopies(existingBook.getTotalCopies() + 1);
+                  existingBook.setAvailableCopies(existingBook.getAvailableCopies() + 1);
+                  return existingBook;
+                })
+            .orElseGet(
+                () -> {
+                  Book newBook = mapper.toBookEntity(bookDto);
+                  newBook.setCreatedAt(LocalDateTime.now());
+                  newBook.setAvailableCopies(1);
+                  newBook.setTotalCopies(1);
+                  return newBook;
+                });
     Book savedBook = bookRepository.save(book);
     return mapper.toBookDto(savedBook);
   }
