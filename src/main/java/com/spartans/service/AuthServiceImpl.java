@@ -99,7 +99,6 @@ public class AuthServiceImpl implements AuthService {
         authRepo
             .findById(request.email())
             .orElseThrow(() -> new UserNotFoundException("This email is not registered"));
-    System.out.println("userAuth=" + userAuth.getEmail());
 
     // Create reset token
     String resetToken = UUID.randomUUID().toString();
