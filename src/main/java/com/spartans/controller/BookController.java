@@ -2,6 +2,7 @@ package com.spartans.controller;
 
 import com.spartans.dto.BookDTO;
 import com.spartans.service.BookService;
+import com.spartans.util.UserContext;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -17,14 +18,15 @@ public class BookController {
   @Autowired private BookService bookService;
 
   // Add new book
-  @PostMapping("/add")
+  @PostMapping("/")
   public ResponseEntity<?> addBook(@RequestBody BookDTO book) {
+    UserContext.checkAdmin();
     BookDTO savedBook = bookService.addBook(book);
     return new ResponseEntity<>(savedBook, HttpStatus.CREATED);
   }
 
   // Get all books
-  @GetMapping("/list")
+  @GetMapping("/")
   public ResponseEntity<?> getAllBooks() {
     try {
       List<BookDTO> books = bookService.getAllBooks();
@@ -50,12 +52,14 @@ public class BookController {
   // Update existing book
   @PutMapping("/{id}")
   public ResponseEntity<?> updateBook(@PathVariable Long id, @RequestBody BookDTO updatedBook) {
+    UserContext.checkAdmin();
     BookDTO updated = bookService.updateBook(id, updatedBook);
     return new ResponseEntity<>(updated, HttpStatus.OK);
   }
 
   @DeleteMapping("/{id}")
   public ResponseEntity<?> deleteBook(@PathVariable Long id) {
+    UserContext.checkAdmin();
     bookService.deleteBook(id);
     return ResponseEntity.ok("Book deleted successfully");
   }

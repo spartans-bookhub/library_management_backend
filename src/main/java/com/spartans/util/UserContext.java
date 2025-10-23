@@ -1,5 +1,6 @@
 package com.spartans.util;
 
+import com.spartans.exception.ForbiddenException;
 import java.util.Map;
 
 public class UserContext {
@@ -30,5 +31,11 @@ public class UserContext {
 
   public static void clear() {
     currentUser.remove();
+  }
+
+  public static void checkAdmin() {
+    if (!"ADMIN".equalsIgnoreCase(getRole())) {
+      throw new ForbiddenException("Access denied: Admins only");
+    }
   }
 }
