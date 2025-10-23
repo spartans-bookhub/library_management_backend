@@ -12,5 +12,5 @@ public interface NotificationService {
 
   void sendDueDateReminder(User user, Book book, Long daysLeft);
 
-  void sendPasswordResetReminder(String email, String resetToken);
+  void sendPasswordResetReminder(String email, String resetToken, String resetLink);
 }
