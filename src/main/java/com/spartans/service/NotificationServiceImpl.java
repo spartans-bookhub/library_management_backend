@@ -1,27 +1,23 @@
 package com.spartans.service;
 
+import com.spartans.config.NotificationConfig;
 import com.spartans.model.Book;
 import com.spartans.model.Notification;
 import com.spartans.model.User;
 import com.spartans.repository.NotificationRepository;
 import java.time.LocalDateTime;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
 public class NotificationServiceImpl implements NotificationService {
 
-  @Autowired JavaMailSender mailSender;
-
   @Autowired NotificationRepository notificationRepository;
 
   @Autowired EmailService emailService;
 
-  @Value("${reset.password.link}")
-  String resetPasswordLink;
+  @Autowired NotificationConfig notificationConfig;
 
   // Generic method to save a notification
   private void saveNotification(User user, Book book, String type, String message, String status) {
@@ -47,14 +43,8 @@ public class NotificationServiceImpl implements NotificationService {
       return;
     }
 
-    //    SimpleMailMessage message = new SimpleMailMessage();
-    //    message.setTo(to);
-    //    message.setSubject(subject);
-    //    message.setText(text);
-
     try {
       emailService.sendEmail(to, subject, text);
-      //      mailSender.send(message);
       System.out.println("Email sent to " + to + ": " + subject);
       saveNotification(user, book, type, text, "SENT");
     } catch (Exception e) {
@@ -112,14 +102,12 @@ public class NotificationServiceImpl implements NotificationService {
 
   @Async
   @Override
-  public void sendPasswordResetReminder(String email, String resetToken) {
-    System.out.println("resetToken=" + resetToken);
+  public void sendPasswordResetReminder(String email, String resetToken, String resetLink) {
     String subject = "Password Reset Link";
-    String resetLink = resetPasswordLink + resetToken; // front-end url
     String msg =
         String.format(
-            "To reset password, click the link below:\n '%s' "
-                + "\nIf you did not request, please ignore this email.",
+            "\nTo reset password, click the link below:\n '%s' "
+                + "\nIf you did not request, please ignore this email.\n",
             resetLink);
     sendEmail(email, subject, msg, "PASSWORD_RESET");
   }

@@ -1,5 +1,6 @@
 package com.spartans.service;
 
+import com.spartans.config.ResetPasswordConfig;
 import com.spartans.dto.*;
 import com.spartans.exception.*;
 import com.spartans.mapper.UserMapper;
@@ -9,6 +10,7 @@ import com.spartans.repository.AuthRepository;
 import com.spartans.util.JWTUtils;
 import com.spartans.util.UserContext;
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -25,6 +27,8 @@ public class AuthServiceImpl implements AuthService {
   @Autowired PasswordEncoder passwordEncoder;
 
   @Autowired JWTUtils jwtUtil;
+
+  @Autowired ResetPasswordConfig resetPasswordConfig;
 
   @Autowired NotificationService notificationService;
 
@@ -101,35 +105,38 @@ public class AuthServiceImpl implements AuthService {
             .orElseThrow(() -> new UserNotFoundException("This email is not registered"));
 
     // Create reset token
-    String resetToken = UUID.randomUUID().toString();
+    String resetToken =
+        Base64.getEncoder()
+            .encodeToString(
+                (UUID.randomUUID().toString() + ":" + System.currentTimeMillis()).getBytes());
 
     // Add reset link
     userAuth.setResetToken(resetToken);
     authRepo.save(userAuth);
 
     // send reset link
-    notificationService.sendPasswordResetReminder(request.email(), resetToken);
+    String resetLink = resetPasswordConfig.getLink() + resetToken; // front-end url
+    notificationService.sendPasswordResetReminder(request.email(), resetToken, resetLink);
   }
 
   @Override
   public boolean resetPassword(ResetPasswordDTO request) {
-    // Check if passwords match
-    if (!request.newPassword().equals(request.confirmNewPassword()))
-      throw new IllegalArgumentException("New password and confirmation do not match");
-
-    // Validate and fetch userAuth with the token
-    UserAuth userAuth =
-        authRepo
-            .findByResetToken(request.resetToken())
-            .orElseThrow(
-                () ->
-                    new ResourceNotFoundException(
-                        "Password cannot be reset with the same URL again."));
-
-    userAuth.setPassword(passwordEncoder.encode(request.newPassword()));
-    userAuth.setResetToken("");
-    authRepo.save(userAuth);
-    return true;
+    // Check for token expiry
+    if (validateResetToken(request.resetToken())) {
+      // Validate and fetch userAuth with the token
+      UserAuth userAuth =
+          authRepo
+              .findByResetToken(request.resetToken())
+              .orElseThrow(
+                  () ->
+                      new ResourceNotFoundException(
+                          "Password cannot be reset with the same URL again. Please request a new reset link"));
+      userAuth.setPassword(passwordEncoder.encode(request.newPassword()));
+      userAuth.setResetToken("");
+      authRepo.save(userAuth);
+      return true;
+    }
+    return false;
   }
 
   private boolean validatePassword(String password, String savedPassword, String errorMessage) {
@@ -137,5 +144,20 @@ public class AuthServiceImpl implements AuthService {
       return true;
     }
     throw new InvalidLoginException(errorMessage);
+  }
+
+  private boolean validateResetToken(String token) {
+    if (token == null)
+      throw new InvalidOperationException("Reset link invalid. Please request a new reset link.");
+
+    String decodedToken = new String(Base64.getDecoder().decode(token));
+    if (!decodedToken.contains(":"))
+      throw new InvalidOperationException("Reset link invalid. Please request a new reset link.");
+
+    long issuedTime = Long.parseLong(decodedToken.split(":")[1]);
+    if (System.currentTimeMillis() - issuedTime > resetPasswordConfig.getExpiry())
+      throw new ForbiddenException("Reset link has expired. Please request a new reset link.");
+
+    return true;
   }
 }
