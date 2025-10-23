@@ -62,7 +62,6 @@ class BookServiceImplTest {
             "Publisher",
             LocalDate.now(),
             700.50,
-            LocalDateTime.now(),
             50,
             50,
             5);
@@ -120,7 +119,6 @@ class BookServiceImplTest {
             "Publisher",
             LocalDate.now(),
             700.50,
-            LocalDateTime.now(),
             50,
             50,
             5);
