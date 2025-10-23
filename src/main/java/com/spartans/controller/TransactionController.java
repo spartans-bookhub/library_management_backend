@@ -91,31 +91,26 @@ public class TransactionController {
   // Admin-only: get all transactions
   @GetMapping
   public ResponseEntity<List<BorrowedBookDTO>> getAllTransactions() {
+    UserContext.checkAdmin();
     List<BorrowedBookDTO> transactions =
         transactionService.getAllTransactions().stream().map(this::mapToDTO).toList();
     return ResponseEntity.ok(transactions);
   }
 
-  // Admin-only: get transactions by status
-  @GetMapping("/status/{status}")
+  // Admin-only: get transactions by status using request param
+  @GetMapping("/status")
   public ResponseEntity<List<BorrowedBookDTO>> getTransactionsByStatus(
-      @PathVariable String status) {
+      @RequestParam String status) {
+    UserContext.checkAdmin();
     List<BorrowedBookDTO> transactions =
         transactionService.getTransactionsByStatus(status).stream().map(this::mapToDTO).toList();
     return ResponseEntity.ok(transactions);
   }
 
-  // Admin-only: get overdue transactions
-  @GetMapping("/overdue/all")
-  public ResponseEntity<List<BorrowedBookDTO>> getOverdueTransactions() {
-    List<BorrowedBookDTO> overdueTransactions =
-        transactionService.getOverdueTransactions().stream().map(this::mapToDTO).toList();
-    return ResponseEntity.ok(overdueTransactions);
-  }
-
   // Users with total fine above a threshold : /high-fines?fineThreshold=500
   @GetMapping("/high-fines")
   public ResponseEntity<?> getHighFineUsers(@RequestParam(required = false) Double fineThreshold) {
+    UserContext.checkAdmin();
     double threshold = (fineThreshold != null) ? fineThreshold : config.getFineThreshold();
     return ResponseEntity.ok(transactionService.getHighFineUsers(threshold));
   }
@@ -124,6 +119,7 @@ public class TransactionController {
   @GetMapping("/late-users")
   public ResponseEntity<?> getRepeatedLateUsers(
       @RequestParam(required = false) Long lateThreshold) {
+    UserContext.checkAdmin();
     long threshold = (lateThreshold != null) ? lateThreshold : config.getLateThreshold();
     return ResponseEntity.ok(transactionService.getRepeatedLateUsers(threshold));
   }
@@ -135,25 +131,28 @@ public class TransactionController {
     return ResponseEntity.ok(availableBooks);
   }
 
+  // Check if a specific book is available
+  @GetMapping("/books/{bookId}/availability")
+  public ResponseEntity<Boolean> isBookAvailable(@PathVariable Long bookId) {
+    UserContext.checkAdmin();
+    boolean isAvailable = transactionService.isBookAvailable(bookId);
+    return ResponseEntity.ok(isAvailable);
+  }
+
   // Update book inventory (Admin-only)
   @PutMapping("/books/{bookId}/inventory")
   public ResponseEntity<Book> updateBookInventory(
       @PathVariable Long bookId, @RequestParam Integer quantityChange) {
+    UserContext.checkAdmin();
     Book updatedBook = transactionService.updateBookInventory(bookId, quantityChange);
     return ResponseEntity.ok(updatedBook);
-  }
-
-  // Check if a specific book is available
-  @GetMapping("/books/{bookId}/availability")
-  public ResponseEntity<Boolean> isBookAvailable(@PathVariable Long bookId) {
-    boolean isAvailable = transactionService.isBookAvailable(bookId);
-    return ResponseEntity.ok(isAvailable);
   }
 
   // Update book availability (Admin-only)
   @PutMapping("/books/{bookId}/availability")
   public ResponseEntity<Book> updateBookAvailability(
       @PathVariable Long bookId, @RequestParam String availabilityStatus) {
+    UserContext.checkAdmin();
     Book updatedBook = transactionService.updateBookAvailability(bookId, availabilityStatus);
     return ResponseEntity.ok(updatedBook);
   }
@@ -162,6 +161,7 @@ public class TransactionController {
   @GetMapping("/books/low-stock")
   public ResponseEntity<List<Book>> getBooksWithLowStock(
       @RequestParam(required = false) Integer threshold) {
+    UserContext.checkAdmin();
     List<Book> lowStockBooks = transactionService.getBooksWithLowStock(threshold);
     return ResponseEntity.ok(lowStockBooks);
   }

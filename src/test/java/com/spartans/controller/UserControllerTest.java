@@ -26,8 +26,8 @@
 //
 //    @InjectMocks private UserController userController;
 //
-//    @MockBean
-//    @Mock private UserServiceImpl userService;
+//    @InjectMocks
+//    private UserServiceImpl userService;
 //
 //    private MockMvc mockMvc;
 //
