@@ -1,20 +1,20 @@
 package com.spartans.service;
 
+import com.spartans.config.NotificationConfig;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 @Service
 public class EmailService {
 
-  @Value("${google.script.url}")
-  private String googleScriptUrl;
+  @Autowired private NotificationConfig notificationConfig;
 
   @Autowired private RestTemplate restTemplate;
 
@@ -29,7 +29,9 @@ public class EmailService {
     HttpEntity<Map<String, String>> request = new HttpEntity<>(payload, headers);
 
     try {
-      restTemplate.postForEntity(googleScriptUrl, request, String.class);
+      ResponseEntity<String> response =
+          restTemplate.postForEntity(notificationConfig.getGscriptUrl(), request, String.class);
+      System.out.println("Response status code from MailApp: " + response.getStatusCode());
       System.out.println("Email sent successfully via Google Script to " + toEmail);
     } catch (Exception e) {
       e.printStackTrace();
