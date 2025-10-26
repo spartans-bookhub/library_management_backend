@@ -32,11 +32,12 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public UserResponseDTO editUser(UserRequestDTO request, Long id) {
+  public UserResponseDTO editUser(UserRequestDTO request) {
     // Check if the user exists
+      System.out.println("editUser="+request.userId());
     User user =
         userRepository
-            .findById(id)
+            .findById(request.userId())
             .orElseThrow(
                 () -> new UserNotFoundException("Incorrect user. This user doesn't exist"));
     user.setUserName(request.userName());
