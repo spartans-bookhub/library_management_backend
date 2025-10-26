@@ -61,4 +61,12 @@ public class CartServiceImpl implements CartService {
         userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
     cartItemRepository.deleteByUserAndBook_BookId(user, bookId);
   }
+
+  @Override
+  @Transactional
+  public void clearCart(Long userId) {
+    User user =
+        userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+    cartItemRepository.deleteByUser(user);
+  }
 }

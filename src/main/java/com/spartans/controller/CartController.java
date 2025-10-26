@@ -38,4 +38,10 @@ public class CartController {
     cartService.removeBookFromCart(UserContext.getUserId(), bookId);
     return ResponseEntity.ok().build();
   }
+
+  @DeleteMapping("/clear")
+  public ResponseEntity<?> clearCart() {
+    cartService.clearCart(UserContext.getUserId());
+    return ResponseEntity.ok("Cart cleared successfully");
+  }
 }

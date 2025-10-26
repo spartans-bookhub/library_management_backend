@@ -9,4 +9,6 @@ public interface CartService {
   CartDTO addBookToCart(Long userId, Long bookId);
 
   void removeBookFromCart(Long userId, Long bookId);
+
+  void clearCart(Long userId);
 }
