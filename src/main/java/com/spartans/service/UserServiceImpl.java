@@ -34,7 +34,6 @@ public class UserServiceImpl implements UserService {
   @Override
   public UserResponseDTO editUser(UserRequestDTO request) {
     // Check if the user exists
-      System.out.println("editUser="+request.userId());
     User user =
         userRepository
             .findById(request.userId())
