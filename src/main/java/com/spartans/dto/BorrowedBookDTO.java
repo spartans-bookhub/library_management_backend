@@ -11,6 +11,7 @@ public class BorrowedBookDTO {
   private LocalDate dueDate;
   private LocalDate returnDate;
   private Double fineAmount;
+  private String transactionStatus;
 
   // Constructors
   public BorrowedBookDTO() {}
@@ -23,7 +24,8 @@ public class BorrowedBookDTO {
       LocalDate borrowDate,
       LocalDate dueDate,
       LocalDate returnDate,
-      Double fineAmount) {
+      Double fineAmount,
+      String transactionStatus) {
     this.transactionId = transactionId;
     this.bookId = bookId;
     this.bookTitle = bookTitle;
@@ -32,6 +34,7 @@ public class BorrowedBookDTO {
     this.dueDate = dueDate;
     this.returnDate = returnDate;
     this.fineAmount = fineAmount;
+    this.transactionStatus = transactionStatus;
   }
 
   public Long getTransactionId() {
@@ -86,7 +89,15 @@ public class BorrowedBookDTO {
     return returnDate;
   }
 
-  public void setReturnDate(LocalDate returnDate) {
+    public String getTransactionStatus() {
+        return transactionStatus;
+    }
+
+    public void setTransactionStatus(String transactionStatus) {
+        this.transactionStatus = transactionStatus;
+    }
+
+    public void setReturnDate(LocalDate returnDate) {
     this.returnDate = returnDate;
   }
 

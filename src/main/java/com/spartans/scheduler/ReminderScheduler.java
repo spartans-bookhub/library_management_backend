@@ -17,7 +17,8 @@ public class ReminderScheduler {
   @Autowired private NotificationService notificationService;
 
   // Run every day at 9 AM
-  @Scheduled(cron = "0 0 9 * * ?")
+  // To test:  @Scheduled(cron = "0 */1 * * * ?", zone = "Asia/Kolkata")
+  @Scheduled(cron = "0 0 9 * * ?", zone = "Asia/Kolkata")
   public void sendDailyReminders() {
     List<Transaction> borrowedTransactions =
         transactionRepository.findByTransactionStatus("BORROWED");
