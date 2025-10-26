@@ -1,7 +1,6 @@
 package com.spartans.controller;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -73,16 +72,16 @@ public class UserControllerTest {
   void testEditProfileSuccess() throws Exception {
     Long userId = 1L;
     UserRequestDTO request =
-        new UserRequestDTO("John Doe", "9876543210", "Some Address", "john@example.com");
+        new UserRequestDTO(10, "John Doe", "9876543210", "Some Address", "john@example.com");
     UserResponseDTO updatedDto =
         new UserResponseDTO(
             "John Doe", "john@example.com", "9876543210", "Some Address", "STUDENT");
 
-    when(userService.editUser(any(UserRequestDTO.class), eq(userId))).thenReturn(updatedDto);
+    when(userService.editUser(any(UserRequestDTO.class))).thenReturn(updatedDto);
 
     mockMvc
         .perform(
-            put("/api/user/{id}", userId)
+            put("/api/user")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isOk())
@@ -94,14 +93,14 @@ public class UserControllerTest {
   void testEditProfileUserNotFound() throws Exception {
     Long userId = 1L;
     UserRequestDTO request =
-        new UserRequestDTO("John Doe", "9876543210", "Some Address", "john@example.com");
+        new UserRequestDTO(10, "John Doe", "9876543210", "Some Address", "john@example.com");
 
-    when(userService.editUser(any(UserRequestDTO.class), eq(userId)))
+    when(userService.editUser(any(UserRequestDTO.class)))
         .thenThrow(new UserNotFoundException("Incorrect user. This user doesn't exist"));
 
     mockMvc
         .perform(
-            put("/api/user/{id}", userId)
+            put("/api/user", userId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isNotFound())

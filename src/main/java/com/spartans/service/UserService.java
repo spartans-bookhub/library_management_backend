@@ -8,7 +8,7 @@ public interface UserService {
 
   UserResponseDTO getUser(Long id);
 
-  UserResponseDTO editUser(UserRequestDTO request, Long id);
+  UserResponseDTO editUser(UserRequestDTO request);
 
   List<UserResponseDTO> getAllUsers();
 

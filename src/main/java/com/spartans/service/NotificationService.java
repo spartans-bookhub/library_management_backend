@@ -13,4 +13,10 @@ public interface NotificationService {
   void sendDueDateReminder(User user, Book book, Long daysLeft);
 
   void sendPasswordResetReminder(String email, String resetToken, String resetLink);
+
+  void sendRegistrationEmail(String email, String name);
+
+  void sendPasswordChangeEmail(String email);
+
+  void sendResetSuccessEmail(String email);
 }

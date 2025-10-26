@@ -73,7 +73,7 @@ public class UserServiceTest {
       new UserResponseDTO(
           "John", "john@test.com", "9099999990", "456, main street, HR-6788", "STUDENT");
   UserRequestDTO userRequestDTO =
-      new UserRequestDTO("John", "9099999990", "456, main street, HR-6788", "john@test.com");
+      new UserRequestDTO(10, "John", "9099999990", "456, main street, HR-6788", "john@test.com");
 
   @BeforeEach
   void setUp() {
@@ -116,7 +116,7 @@ public class UserServiceTest {
     Mockito.when(authRepo.findById("john@test.com")).thenReturn(Optional.of(userAuth));
     Mockito.when(userRepo.save(user)).thenReturn(user);
     Mockito.when(mapper.toUserDto(user)).thenReturn(userResponseDTO);
-    UserResponseDTO userResponse = userService.editUser(userRequestDTO, Long.valueOf(10));
+    UserResponseDTO userResponse = userService.editUser(userRequestDTO);
     assertThat(userResponse).isNotNull();
     assertThat(userResponse)
         .extracting("userName", "email", "contactNumber", "address", "role")
@@ -127,10 +127,10 @@ public class UserServiceTest {
   // UserResponseDTO editUser(UserRequestDTO request, Long id) - UserNotFoundException
   @Test
   void testEditUserUserNotFound() {
-    assertThatThrownBy(() -> userService.editUser(userRequestDTO, Long.valueOf(10)))
+    assertThatThrownBy(() -> userService.editUser(userRequestDTO))
         .isInstanceOf(UserNotFoundException.class)
         .hasMessageContaining("Incorrect user. This user doesn't exist");
-    assertThatThrownBy(() -> userService.editUser(userRequestDTO, Long.valueOf(10)))
+    assertThatThrownBy(() -> userService.editUser(userRequestDTO))
         .isInstanceOf(UserNotFoundException.class)
         .hasMessageContaining("Incorrect user. This user doesn't exist");
   }

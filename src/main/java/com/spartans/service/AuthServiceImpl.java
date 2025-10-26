@@ -51,6 +51,7 @@ public class AuthServiceImpl implements AuthService {
     } catch (Exception ex) {
       throw new DBException("Failed to save user");
     }
+    notificationService.sendRegistrationEmail(userAuth.getEmail(), user.getUserName());
     return true;
   }
 
@@ -62,12 +63,12 @@ public class AuthServiceImpl implements AuthService {
             .orElseThrow(() -> new UserNotFoundException("Email is not registered"));
 
     if (userAuth.getRole().equals("STUDENT") && userAuth.getStudent() == null) {
-      throw new UserNotFoundException("Student is not found");
+      throw new UserNotFoundException("This user is not found");
     }
 
     // Validate password
     validatePassword(
-        request.password(), userAuth.getPassword(), "Login email or password is wrong");
+        request.password(), userAuth.getPassword(), "Invalid email or password. Please try again.");
 
     // Generate JWT
     String token = jwtUtil.generateToken(userAuth);
@@ -91,6 +92,7 @@ public class AuthServiceImpl implements AuthService {
         request.oldPassword(), userAuth.getPassword(), "Current password is incorrect")) {
       userAuth.setPassword(passwordEncoder.encode(request.newPassword()));
       authRepo.save(userAuth);
+      notificationService.sendPasswordChangeEmail(userAuth.getEmail());
       return true;
     }
     return false;
@@ -134,6 +136,7 @@ public class AuthServiceImpl implements AuthService {
       userAuth.setPassword(passwordEncoder.encode(request.newPassword()));
       userAuth.setResetToken("");
       authRepo.save(userAuth);
+      notificationService.sendResetSuccessEmail(userAuth.getEmail());
       return true;
     }
     return false;
