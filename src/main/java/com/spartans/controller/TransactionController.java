@@ -177,6 +177,6 @@ public class TransactionController {
         transaction.getDueDate(),
         transaction.getReturnDate(),
         transaction.getFineAmount(),
-            transaction.getTransactionStatus());
+        transaction.getTransactionStatus());
   }
 }

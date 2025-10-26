@@ -89,15 +89,15 @@ public class BorrowedBookDTO {
     return returnDate;
   }
 
-    public String getTransactionStatus() {
-        return transactionStatus;
-    }
+  public String getTransactionStatus() {
+    return transactionStatus;
+  }
 
-    public void setTransactionStatus(String transactionStatus) {
-        this.transactionStatus = transactionStatus;
-    }
+  public void setTransactionStatus(String transactionStatus) {
+    this.transactionStatus = transactionStatus;
+  }
 
-    public void setReturnDate(LocalDate returnDate) {
+  public void setReturnDate(LocalDate returnDate) {
     this.returnDate = returnDate;
   }
 
