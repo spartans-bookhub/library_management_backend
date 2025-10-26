@@ -14,30 +14,26 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin
 public class NotificationController {
 
-    private final NotificationRepository notificationRepository;
+  private final NotificationRepository notificationRepository;
 
-    public NotificationController(NotificationRepository notificationRepository) {
-        this.notificationRepository = notificationRepository;
+  public NotificationController(NotificationRepository notificationRepository) {
+    this.notificationRepository = notificationRepository;
+  }
+
+  @GetMapping()
+  public List<NotificationDTO> getRecentNotifications() {
+    Long userId = UserContext.getUserId();
+    if (userId == null) return Collections.emptyList(); // null-safe
+
+    List<Notification> notifications =
+        notificationRepository.findTop10ByUserUserIdOrderByCreatedAtDesc(userId);
+
+    if (notifications == null || notifications.isEmpty()) {
+      return Collections.emptyList(); // null-safe
     }
 
-    @GetMapping()
-    public List<NotificationDTO> getRecentNotifications() {
-        Long userId = UserContext.getUserId();
-        if (userId == null) return Collections.emptyList(); // null-safe
-
-        List<Notification> notifications =
-                notificationRepository.findTop10ByUserUserIdOrderByCreatedAtDesc(userId);
-
-        if (notifications == null || notifications.isEmpty()) {
-            return Collections.emptyList(); // null-safe
-        }
-
-        return notifications.stream()
-                .map(n -> new NotificationDTO(
-                        n.getId(),
-                        n.getMessage(),
-                        n.getCreatedAt()
-                ))
-                .collect(Collectors.toList());
-    }
+    return notifications.stream()
+        .map(n -> new NotificationDTO(n.getId(), n.getMessage(), n.getCreatedAt()))
+        .collect(Collectors.toList());
+  }
 }

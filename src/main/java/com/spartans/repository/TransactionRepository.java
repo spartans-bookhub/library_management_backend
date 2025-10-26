@@ -31,11 +31,10 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
   List<Transaction> findByUserAndTransactionStatusIn(User user, List<String> transactionStatuses);
 
   // Find active transaction for a specific user and book with multiple statuses
-    Optional<Transaction> findByUserAndBookAndTransactionStatusIn(
-            User user, Book book, List<String> transactionStatuses);
+  Optional<Transaction> findByUserAndBookAndTransactionStatusIn(
+      User user, Book book, List<String> transactionStatuses);
 
-
-    // Users with total fine above a threshold
+  // Users with total fine above a threshold
   @Query(
       "SELECT t.user.id, t.user.userName, t.user.contactNumber, SUM(t.fineAmount) as totalFine "
           + "FROM Transaction t "

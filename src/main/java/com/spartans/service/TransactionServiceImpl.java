@@ -91,53 +91,59 @@ public class TransactionServiceImpl implements TransactionService {
     return savedTransaction;
   }
 
-    @Override
-    @Transactional
-    public BorrowBooksResponse borrowMultipleBooks(Long userId, List<Long> bookIds) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+  @Override
+  @Transactional
+  public BorrowBooksResponse borrowMultipleBooks(Long userId, List<Long> bookIds) {
+    User user =
+        userRepository
+            .findById(userId)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
-        long borrowedCount = transactionRepository.countByUserAndTransactionStatus(
-                user, transactionStatusConfig.getBorrowed());
+    long borrowedCount =
+        transactionRepository.countByUserAndTransactionStatus(
+            user, transactionStatusConfig.getBorrowed());
 
-        long overdueCount = transactionRepository.countByUserAndTransactionStatus(
-                user, transactionStatusConfig.getDue());
+    long overdueCount =
+        transactionRepository.countByUserAndTransactionStatus(
+            user, transactionStatusConfig.getDue());
 
-        long currentBorrowed = borrowedCount + overdueCount;
-        int maxLimit = libraryConfig.getMaxBorrowLimit();
-        int requested = bookIds.size();
+    long currentBorrowed = borrowedCount + overdueCount;
+    int maxLimit = libraryConfig.getMaxBorrowLimit();
+    int requested = bookIds.size();
 
-        if (currentBorrowed + requested > maxLimit) {
-            throw new InvalidOperationException(
-                    "Borrow limit exceeded. You already have " + currentBorrowed +
-                            " books; maximum allowed is " + maxLimit + "."
-            );
-        }
-
-        List<BorrowedBookDTO> borrowedList = new ArrayList<>();
-
-        for (Long bookId : bookIds) {
-            try {
-                Transaction transaction = borrowBook(userId, bookId);
-                borrowedList.add(toDTO(transaction));
-            } catch (BookNotAvailableException e) {
-                throw new InvalidOperationException(
-                        "Book with ID " + bookId + " is not available. Modify your cart and try again."
-                );
-            } catch (BookAlreadyBorrowedException e) {
-                throw new InvalidOperationException(
-                        "Book with ID " + bookId + " is already borrowed. Modify your cart and try again."
-                );
-            } catch (BorrowLimitExceededException e) {
-                throw new InvalidOperationException(
-                        "Borrow limit exceeded. You already have " + currentBorrowed +
-                                " books; maximum allowed is " + maxLimit + "."
-                );
-            }
-        }
-
-        return new BorrowBooksResponse(borrowedList, Map.of());
+    if (currentBorrowed + requested > maxLimit) {
+      throw new InvalidOperationException(
+          "Borrow limit exceeded. You already have "
+              + currentBorrowed
+              + " books; maximum allowed is "
+              + maxLimit
+              + ".");
     }
+
+    List<BorrowedBookDTO> borrowedList = new ArrayList<>();
+
+    for (Long bookId : bookIds) {
+      try {
+        Transaction transaction = borrowBook(userId, bookId);
+        borrowedList.add(toDTO(transaction));
+      } catch (BookNotAvailableException e) {
+        throw new InvalidOperationException(
+            "Book with ID " + bookId + " is not available. Modify your cart and try again.");
+      } catch (BookAlreadyBorrowedException e) {
+        throw new InvalidOperationException(
+            "Book with ID " + bookId + " is already borrowed. Modify your cart and try again.");
+      } catch (BorrowLimitExceededException e) {
+        throw new InvalidOperationException(
+            "Borrow limit exceeded. You already have "
+                + currentBorrowed
+                + " books; maximum allowed is "
+                + maxLimit
+                + ".");
+      }
+    }
+
+    return new BorrowBooksResponse(borrowedList, Map.of());
+  }
 
   @Override
   public BorrowedBookDTO returnBook(Long userId, Long bookId) {
@@ -151,11 +157,11 @@ public class TransactionServiceImpl implements TransactionService {
             .findById(bookId)
             .orElseThrow(() -> new ResourceNotFoundException("Book not found with id: " + bookId));
 
-      List<String> activeStatus = List.of(transactionStatusConfig.getBorrowed(),
-              transactionStatusConfig.getDue());
+    List<String> activeStatus =
+        List.of(transactionStatusConfig.getBorrowed(), transactionStatusConfig.getDue());
     Transaction transaction =
         transactionRepository
-                .findByUserAndBookAndTransactionStatusIn(user, book, activeStatus)
+            .findByUserAndBookAndTransactionStatusIn(user, book, activeStatus)
             .orElseThrow(
                 () -> new ResourceNotFoundException("No active borrowing found for this book"));
 
