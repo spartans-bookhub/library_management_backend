@@ -26,7 +26,7 @@ public class BookController {
   }
 
   // Get all books
-  @GetMapping("/")
+  @GetMapping("/list")
   public ResponseEntity<?> getAllBooks() {
     try {
       List<BookDTO> books = bookService.getAllBooks();

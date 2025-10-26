@@ -176,6 +176,7 @@ public class TransactionController {
         transaction.getBorrowDate(),
         transaction.getDueDate(),
         transaction.getReturnDate(),
-        transaction.getFineAmount());
+        transaction.getFineAmount(),
+        transaction.getTransactionStatus());
   }
 }

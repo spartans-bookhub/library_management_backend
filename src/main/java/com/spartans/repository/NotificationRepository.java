@@ -19,6 +19,8 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
   // Find all notifications by status
   List<Notification> findByStatus(String status);
 
-  // TODO: find recent notifications for a user
+  List<Notification> findTop10ByUserUserIdOrderByCreatedAtDesc(Long userId);
+
+  List<Notification> findTop10ByUser_UserIdOrderByCreatedAtDesc(Long userId);
   //  List<Notification> findTop10ByUserOrderByCreatedAtDesc(User user);
 }
