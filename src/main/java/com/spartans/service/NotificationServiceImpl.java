@@ -106,13 +106,53 @@ public class NotificationServiceImpl implements NotificationService {
     String subject = "Password Reset Link";
     String msg =
         String.format(
-            "\nTo reset password, click the link below:\n '%s' "
-                + "\nIf you did not request, please ignore this email.\n",
+            "\n  To reset password, click the link below:  \n '%s' "
+                + "  \nIf you did not request, please ignore this email.  \n",
             resetLink);
-    sendEmail(email, subject, msg, "PASSWORD_RESET");
+    sendEmail(email, subject, msg, "PASSWORD_RESET_LINK");
   }
 
   private void sendEmail(String to, String subject, String text, String type) {
     sendEmail(to, subject, text, null, null, type);
+  }
+
+  public void sendRegistrationEmail(String email, String name) {
+    String subject = "Registration successful!";
+    String msg =
+        String.format(
+            "\nWelcome to Book Nest, %s!  \n"
+                + "\n Thank you for registering with Book Nest!  \n"
+                + "\n Email: %s is successfully registered. You can now log in using your email and password.  \n",
+            name, email);
+
+    System.out.println(msg);
+    System.out.println("email=" + email);
+    sendEmail(email, subject, msg, "NEW_REGISTRATION");
+  }
+
+  public void sendResetSuccessEmail(String email) {
+    String subject = "Password Reset successful!";
+    String msg =
+        String.format(
+            "\n Email: %s   \n"
+                + "\n Your password reset is successful. You can now log in using your email and password.  \n",
+            email);
+
+    System.out.println(msg);
+    System.out.println("email=" + email);
+    sendEmail(email, subject, msg, "PASSWORD_RESET_SUCCESS");
+  }
+
+  public void sendPasswordChangeEmail(String email) {
+    String subject = "Password Change successful!";
+    String msg =
+        String.format(
+            "\n Email: %s  \n"
+                + "\n Your password change is successful. You can now log in using your email and password.  \n",
+            email);
+
+    System.out.println(msg);
+    System.out.println("email=" + email);
+    sendEmail(email, subject, msg, "PASSWORD_CHANGE_SUCCESS");
   }
 }
