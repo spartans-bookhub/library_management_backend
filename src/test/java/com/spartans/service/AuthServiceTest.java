@@ -27,10 +27,13 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class AuthServiceTest {
 
   @InjectMocks private AuthServiceImpl authService;
@@ -43,9 +46,14 @@ class AuthServiceTest {
 
   @Mock private JWTUtils jwtUtil;
 
+  @Mock private NotificationServiceImpl notificationService;
+
   @BeforeEach
   void setUp() {
     MockitoAnnotations.openMocks(this);
+    doNothing().when(notificationService).sendRegistrationEmail(anyString(), anyString());
+    doNothing().when(notificationService).sendPasswordChangeEmail(anyString());
+    doNothing().when(notificationService).sendResetSuccessEmail(anyString());
   }
 
   @Test
@@ -62,11 +70,14 @@ class AuthServiceTest {
     RegisterRequestDTO request = mock(RegisterRequestDTO.class);
     when(request.email()).thenReturn("test@example.com");
     when(request.password()).thenReturn("password");
+    doNothing().when(notificationService).sendRegistrationEmail(anyString(), anyString());
 
     when(authRepo.existsById("test@example.com")).thenReturn(false);
 
     UserAuth userAuth = new UserAuth();
     User student = new User();
+    userAuth.setEmail("user@test.com");
+    student.setUserName("test");
 
     when(mapper.toUserAuthEntity(request)).thenReturn(userAuth);
     when(mapper.toUserEntity(request)).thenReturn(student);
@@ -92,6 +103,8 @@ class AuthServiceTest {
     when(authRepo.existsById("test@example.com")).thenReturn(false);
     UserAuth userAuth = new UserAuth();
     User student = new User();
+    userAuth.setEmail("user@test.com");
+    student.setUserName("test");
     when(mapper.toUserAuthEntity(request)).thenReturn(userAuth);
     when(mapper.toUserEntity(request)).thenReturn(student);
     when(passwordEncoder.encode(anyString())).thenReturn("encoded");
@@ -108,6 +121,8 @@ class AuthServiceTest {
     when(authRepo.existsById("test@example.com")).thenReturn(false);
     UserAuth userAuth = new UserAuth();
     User user = new User();
+    userAuth.setEmail("user@test.com");
+    user.setUserName("test");
     when(request.password()).thenReturn("password");
     when(mapper.toUserAuthEntity(request)).thenReturn(userAuth);
     when(mapper.toUserEntity(request)).thenReturn(user);
@@ -189,9 +204,11 @@ class AuthServiceTest {
   void testChangePasswordSuccess() {
     try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
       mockedUserContext.when(UserContext::getEmail).thenReturn("user@test.com");
+      doNothing().when(notificationService).sendPasswordChangeEmail(anyString());
 
       UserAuth userAuth = new UserAuth();
       userAuth.setPassword("encodedOldPassword");
+      userAuth.setEmail("user@test.com");
 
       PasswordRequestDTO request = new PasswordRequestDTO("OldPass1!", "NewPass2@", "NewPass2@");
 
@@ -242,6 +259,7 @@ class AuthServiceTest {
       String email = "user@test.com";
 
       UserAuth userAuth = new UserAuth();
+      userAuth.setEmail("user@test.com");
       userAuth.setPassword("encodedOldPassword");
 
       PasswordRequestDTO request =
