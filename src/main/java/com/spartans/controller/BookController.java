@@ -18,7 +18,7 @@ public class BookController {
   @Autowired private BookService bookService;
 
   // Add new book
-  @PostMapping("/")
+  @PostMapping
   public ResponseEntity<?> addBook(@RequestBody BookDTO book) {
     UserContext.checkAdmin();
     BookDTO savedBook = bookService.addBook(book);
