@@ -76,7 +76,7 @@ public class NotificationServiceImpl implements NotificationService {
     String email = user.getUserAuth() != null ? user.getUserAuth().getEmail() : null;
     String msg =
         String.format(
-            "Late Return: You returned '%s' %d day(s) late. Fine: $%.2f",
+            "Late Return: You returned '%s' %d day(s) late. Fine: Rs.%.2f",
             book.getBookTitle(), daysLate, fine);
     sendEmail(email, "Library Late Return Notice", msg, user, book, "LATE");
   }
