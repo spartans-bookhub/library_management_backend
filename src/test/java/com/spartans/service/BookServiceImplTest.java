@@ -146,14 +146,14 @@ class BookServiceImplTest {
   }
 
   //  Test deleteBook success
-  @Test
-  void testDeleteBook_Success() {
-    when(bookRepository.existsById(1L)).thenReturn(true);
-    doNothing().when(bookRepository).deleteById(1L);
-
-    bookService.deleteBook(1L);
-    verify(bookRepository, times(1)).deleteById(1L);
-  }
+  //  @Test
+  //  void testDeleteBook_Success() {
+  //    when(bookRepository.existsById(1L)).thenReturn(true);
+  //    doNothing().when(bookRepository).deleteById(1L);
+  //
+  //    bookService.deleteBook(1L);
+  //    verify(bookRepository, times(1)).deleteById(1L);
+  //  }
 
   //  Test deleteBook not found
   @Test

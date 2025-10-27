@@ -9,7 +9,7 @@ public class LibraryConfig {
 
   private int maxBorrowLimit = 5;
   private int borrowPeriodDays = 14;
-  private double dailyFineRate = 1.0;
+  private double dailyFineRate = 50.0;
   private int lowStockThreshold = 5;
 
   // Getters and Setters
