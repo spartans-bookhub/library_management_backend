@@ -7,12 +7,18 @@ public class NotificationDTO {
   private String message;
   private LocalDateTime createdAt;
 
+  public NotificationDTO(Long id, String message, LocalDateTime createdAt) {
+    this.id = id != null ? id : 0L; // default 0 if null
+    this.message = message != null ? message : "";
+    this.createdAt = createdAt != null ? createdAt : LocalDateTime.now();
+  }
+
   public Long getId() {
     return id;
   }
 
   public void setId(Long id) {
-    this.id = id;
+    this.id = id != null ? id : 0L;
   }
 
   public String getMessage() {
@@ -20,7 +26,7 @@ public class NotificationDTO {
   }
 
   public void setMessage(String message) {
-    this.message = message;
+    this.message = message != null ? message : "";
   }
 
   public LocalDateTime getCreatedAt() {
@@ -28,12 +34,6 @@ public class NotificationDTO {
   }
 
   public void setCreatedAt(LocalDateTime createdAt) {
-    this.createdAt = createdAt;
-  }
-
-  public NotificationDTO(Long id, String message, LocalDateTime createdAt) {
-    this.id = id;
-    this.message = message;
-    this.createdAt = createdAt;
+    this.createdAt = createdAt != null ? createdAt : LocalDateTime.now();
   }
 }
