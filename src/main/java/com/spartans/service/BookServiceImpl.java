@@ -22,9 +22,9 @@ public class BookServiceImpl implements BookService {
   public List<BookDTO> getAllBooks() {
     List<Book> books = bookRepository.findAll();
 
-    if (books.isEmpty()) {
-      throw new RuntimeException("No books are available");
-    }
+    //    if (books.isEmpty()) {
+    //      throw new RuntimeException("No books are available");
+    //    }
 
     return books.stream().map((book) -> mapper.toBookDto(book)).collect(Collectors.toList());
   }
@@ -140,10 +140,19 @@ public class BookServiceImpl implements BookService {
   }
 
   public void deleteBook(Long id) {
-    if (!bookRepository.existsById(id)) {
-      throw new BookNotFoundException("Book not found with id: " + id);
+    Book existingBook =
+        bookRepository
+            .findById(id)
+            .orElseThrow(() -> new BookNotFoundException("Book is not found with id: " + id));
+    System.out.println("existingBook.getAvailableCopies()=" + existingBook.getAvailableCopies());
+    System.out.println("existingBook.getAvailableCopies()=" + existingBook.getBookId());
+    if (existingBook.getAvailableCopies() > 1) {
+      existingBook.setAvailableCopies(existingBook.getAvailableCopies() - 1);
+      bookRepository.save(existingBook);
+    } else {
+      System.out.println("deleting");
+      bookRepository.deleteById(id);
     }
-    bookRepository.deleteById(id);
   }
 
   // Get book by ID
