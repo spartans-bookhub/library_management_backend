@@ -124,6 +124,8 @@
                             <version>1.5.5.Final</version>
                         </path>
                     </annotationProcessorPaths>
+                    <source>25</source>
+                    <target>25</target>
                 </configuration>
             </plugin>
             <plugin>
