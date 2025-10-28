@@ -2,6 +2,7 @@ package com.spartans.service;
 
 import com.spartans.dto.BookDTO;
 import com.spartans.exception.BookNotFoundException;
+import com.spartans.exception.InvalidOperationException;
 import com.spartans.mapper.BookMapper;
 import com.spartans.model.Book;
 import com.spartans.repository.BookRepository;
@@ -102,6 +103,11 @@ public class BookServiceImpl implements BookService {
             .findByIsbnIgnoreCase(bookDto.isbn())
             .map(
                 (existingBook) -> {
+                   if(!bookDto.bookTitle().equalsIgnoreCase(existingBook.getBookTitle())){
+                       throw new InvalidOperationException("ISBN: "+bookDto.isbn()
+                               +" is already present with name: "+existingBook.getBookTitle()
+                               +". Add the same title to increase the number of copies");
+                   }
                   existingBook.setTotalCopies(existingBook.getTotalCopies() + 1);
                   existingBook.setAvailableCopies(existingBook.getAvailableCopies() + 1);
                   return existingBook;
@@ -134,7 +140,7 @@ public class BookServiceImpl implements BookService {
     existingBook.setPublisherName(book.getPublisherName());
     existingBook.setPublicationDate(book.getPublicationDate());
     existingBook.setPrice(book.getPrice());
-    existingBook.setTotalCopies(book.getTotalCopies());
+    existingBook.setTotalCopies(existingBook.getTotalCopies()+book.getTotalCopies());
     existingBook.setAvailableCopies(book.getAvailableCopies());
     return mapper.toBookDto(bookRepository.save(existingBook));
   }
