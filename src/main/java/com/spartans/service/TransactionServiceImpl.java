@@ -373,6 +373,34 @@ public class TransactionServiceImpl implements TransactionService {
         .toList();
   }
 
+  public List<Long> getBorrowingTrend() {
+
+    List<Object[]> results = transactionRepository.findMonthlyBorrowCount();
+
+    Map<Integer, Long> monthCountMap = new HashMap<>();
+    for (Object[] row : results) {
+      Integer month = (Integer) row[0];
+      Long count = (Long) row[1];
+      monthCountMap.put(month, count);
+    }
+
+    List<Long> counts = new ArrayList<>();
+    for (int i = 1; i <= 12; i++) {
+      counts.add(monthCountMap.getOrDefault(i, 0L)); // fills gaps
+    }
+
+    return counts;
+  }
+
+  public Map<String, Long> getPopularCategories() {
+    List<Object[]> results = transactionRepository.findPopularCategories();
+    Map<String, Long> categoryCountMap = new HashMap<>();
+    for (Object[] row : results) {
+      categoryCountMap.put((String) row[0], (Long) row[1]);
+    }
+    return categoryCountMap;
+  }
+
   private BorrowedBookDTO toDTO(Transaction t) {
     return new BorrowedBookDTO(
         t.getTransactionId(),
