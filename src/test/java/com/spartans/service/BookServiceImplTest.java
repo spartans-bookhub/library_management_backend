@@ -108,6 +108,9 @@ class BookServiceImplTest {
     Book updated = new Book();
     updated.setBookTitle("Clean Code");
     updated.setBookAuthor("Robert C. Martin");
+    updated.setTotalCopies(50);
+    updated.setAvailableCopies(45);
+
     bookDto =
         new BookDTO(
             1L,
