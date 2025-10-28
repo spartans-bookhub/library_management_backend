@@ -2,6 +2,7 @@ package com.spartans.service;
 
 import com.spartans.dto.BorrowBooksResponse;
 import com.spartans.dto.BorrowedBookDTO;
+import com.spartans.dto.TransactionDTO;
 import com.spartans.model.Book;
 import com.spartans.model.Transaction;
 import java.util.List;
@@ -43,7 +44,7 @@ public interface TransactionService {
   Book updateBookInventory(Long bookId, Integer quantityChange);
 
   // Get all transactions
-  List<Transaction> getAllTransactions();
+  public List<TransactionDTO> getAllTransactions();
 
   // Get transactions by status
   List<Transaction> getTransactionsByStatus(String status);

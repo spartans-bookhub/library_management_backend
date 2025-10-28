@@ -4,6 +4,7 @@ import com.spartans.config.AdminReportConfig;
 import com.spartans.dto.BorrowBooksRequest;
 import com.spartans.dto.BorrowBooksResponse;
 import com.spartans.dto.BorrowedBookDTO;
+import com.spartans.dto.TransactionDTO;
 import com.spartans.model.Book;
 import com.spartans.model.Transaction;
 import com.spartans.service.TransactionService;
@@ -90,11 +91,9 @@ public class TransactionController {
 
   // Admin-only: get all transactions
   @GetMapping
-  public ResponseEntity<List<BorrowedBookDTO>> getAllTransactions() {
+  public ResponseEntity<List<TransactionDTO>> getAllTransactions() {
     UserContext.checkAdmin();
-    List<BorrowedBookDTO> transactions =
-        transactionService.getAllTransactions().stream().map(this::mapToDTO).toList();
-    return ResponseEntity.ok(transactions);
+    return ResponseEntity.ok(transactionService.getAllTransactions());
   }
 
   // Admin-only: get transactions by status using request param

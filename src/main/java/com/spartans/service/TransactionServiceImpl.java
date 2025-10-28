@@ -6,7 +6,9 @@ import com.spartans.config.TransactionStatusConfig;
 import com.spartans.config.UserRoleConfig;
 import com.spartans.dto.BorrowBooksResponse;
 import com.spartans.dto.BorrowedBookDTO;
+import com.spartans.dto.TransactionDTO;
 import com.spartans.exception.*;
+import com.spartans.mapper.BookMapper;
 import com.spartans.model.Book;
 import com.spartans.model.Transaction;
 import com.spartans.model.User;
@@ -38,6 +40,8 @@ public class TransactionServiceImpl implements TransactionService {
   @Autowired private TransactionStatusConfig transactionStatusConfig;
 
   @Autowired private AdminReportConfig config;
+
+  @Autowired private BookMapper mapper;
 
   @Override
   public Transaction borrowBook(Long userId, Long bookId) {
@@ -287,8 +291,9 @@ public class TransactionServiceImpl implements TransactionService {
   }
 
   @Override
-  public List<Transaction> getAllTransactions() {
-    return transactionRepository.findAll();
+  public List<TransactionDTO> getAllTransactions() {
+    List<Transaction> transactions = transactionRepository.findAll();
+    return transactions.stream().map(transaction -> mapper.toTransactionDto(transaction)).toList();
   }
 
   @Override
