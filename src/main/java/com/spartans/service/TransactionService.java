@@ -61,4 +61,8 @@ public interface TransactionService {
   List<Map<String, Object>> getHighFineUsers(double threshold);
 
   List<Map<String, Object>> getRepeatedLateUsers(long threshold);
+
+  List<Long> getBorrowingTrend();
+
+  Map<String, Long> getPopularCategories();
 }

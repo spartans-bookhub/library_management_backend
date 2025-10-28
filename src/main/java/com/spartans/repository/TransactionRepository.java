@@ -50,4 +50,23 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
           + "GROUP BY t.user.id, t.user.userName, t.user.contactNumber "
           + "HAVING COUNT(t) > :lateThreshold")
   List<Object[]> findUsersWithRepeatedLateReturns(@Param("lateThreshold") long lateThreshold);
+
+  // Get borrowing number per month
+  @Query(
+      """
+        SELECT MONTH(t.borrowDate), COUNT(t)
+        FROM Transaction t
+        WHERE t.transactionStatus = 'BORROWED' OR t.transactionStatus = 'RETURNED'
+        GROUP BY MONTH(t.borrowDate)
+        ORDER BY MONTH(t.borrowDate)
+    """)
+  List<Object[]> findMonthlyBorrowCount();
+
+  // Get popular category
+  @Query(
+      "SELECT t.book.category AS category, COUNT(t) AS count "
+          + "FROM Transaction t "
+          + "GROUP BY t.book.category "
+          + "ORDER BY count DESC")
+  List<Object[]> findPopularCategories();
 }

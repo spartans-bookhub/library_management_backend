@@ -12,6 +12,7 @@ import com.spartans.util.UserContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -163,6 +164,17 @@ public class TransactionController {
     UserContext.checkAdmin();
     List<Book> lowStockBooks = transactionService.getBooksWithLowStock(threshold);
     return ResponseEntity.ok(lowStockBooks);
+  }
+
+  // Admin - analytics
+  @GetMapping("/borrowing-trends")
+  public List<Long> getBorrowingTrends() {
+    return transactionService.getBorrowingTrend();
+  }
+
+  @GetMapping("/popular-categories")
+  public Map<String, Long> getPopularCategories() {
+    return transactionService.getPopularCategories();
   }
 
   // Helper method to convert Transaction to BorrowedBookDTO
