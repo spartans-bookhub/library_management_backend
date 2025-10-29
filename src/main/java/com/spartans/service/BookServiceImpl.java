@@ -153,10 +153,9 @@ public class BookServiceImpl implements BookService {
         bookRepository
             .findById(id)
             .orElseThrow(() -> new BookNotFoundException("Book is not found with id: " + id));
-    System.out.println("existingBook.getAvailableCopies()=" + existingBook.getAvailableCopies());
-    System.out.println("existingBook.getAvailableCopies()=" + existingBook.getBookId());
     if (existingBook.getAvailableCopies() > 1) {
       existingBook.setAvailableCopies(existingBook.getAvailableCopies() - 1);
+      existingBook.setTotalCopies(existingBook.getTotalCopies() - 1);
       bookRepository.save(existingBook);
     } else {
       System.out.println("deleting");
