@@ -119,8 +119,6 @@ public class BookServiceImpl implements BookService {
                 () -> {
                   Book newBook = mapper.toBookEntity(bookDto);
                   newBook.setCreatedAt(LocalDateTime.now());
-                  newBook.setAvailableCopies(1);
-                  newBook.setTotalCopies(1);
                   return newBook;
                 });
     Book savedBook = bookRepository.save(book);
